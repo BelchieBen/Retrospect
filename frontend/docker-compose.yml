@@ -1,0 +1,20 @@
+version: "3.8"
+
+volumes:
+  retrospect-volume:
+    external: true
+  uploads:
+services:
+  postgres:
+    container_name: retrospect-postgres
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "5432:5432"
+    volumes:
+      - retrospect-volume:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=postgres

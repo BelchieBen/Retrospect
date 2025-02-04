@@ -1,0 +1,24 @@
+{
+  "name": "@benjamin-belchie/retrospect-db-client",
+  "version": "1.0.3",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "generate": "npx prisma generate",
+    "db:push": "prisma db push",
+    "postinstall": "npm run generate"
+  },
+  "author": "Ben Belcher",
+  "license": "UNLICENSED",
+  "description": "",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@userName"
+  },
+  "devDependencies": {
+    "@prisma/client": "^5.22.0",
+    "prisma": "^5.22.0"
+  },
+  "peerDependencies": {
+    "@prisma/client": ">=5"
+  }
+}
