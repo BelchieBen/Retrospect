@@ -12,7 +12,7 @@
   "license": "UNLICENSED",
   "description": "",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/@BelchieBen"
+    "registry": "https://npm.pkg.github.com/@userName"
   },
   "devDependencies": {
     "@prisma/client": "^5.22.0",
