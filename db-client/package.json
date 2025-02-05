@@ -1,6 +1,6 @@
 {
-  "name": "@retrospect/retrospect-db-client",
-  "version": "1.0.3",
+  "name": "@BelchieBen/retrospect-db-client",
+  "version": "0.0.2",
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
@@ -12,7 +12,7 @@
   "license": "UNLICENSED",
   "description": "",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/@retrospect"
+    "registry": "https://npm.pkg.github.com/@BelchieBen"
   },
   "devDependencies": {
     "@prisma/client": "^5.22.0",
