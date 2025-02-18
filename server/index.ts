@@ -1,10 +1,11 @@
 import express from "express";
 import cors from "cors";
-import { db } from "./db";
 import { Server } from "socket.io";
 import http from "http";
 import PostgresNotifier from "pg-realtime";
 import "dotenv/config";
+import postsRoutes from "./routes/posts";
+import usersRoutes from "./routes/users";
 
 const app = express();
 const server = http.createServer(app);
@@ -42,29 +43,5 @@ app.get("/", (req, res) => {
   res.json("Hi from backend");
 });
 
-app.get("/posts", async (req, res) => {
-  const posts = await db.post.findMany();
-  res.json(posts);
-});
-
-app.post("/post", async (req, res) => {
-  const { title } = req.body as { title: string };
-  const post = await db.post.create({
-    data: {
-      name: title,
-    },
-  });
-
-  postsChannel.notify(JSON.stringify(post));
-  res.json(post);
-});
-
-app.post("/user", async (req, res) => {
-  const { name } = req.body as { name: string };
-  const post = await db.user.create({
-    data: {
-      name: name,
-    },
-  });
-  res.json(post);
-});
+app.use("/posts", postsRoutes);
+app.use("/users", usersRoutes);
