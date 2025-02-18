@@ -6,6 +6,8 @@ import PostgresNotifier from "pg-realtime";
 import "dotenv/config";
 import postsRoutes from "./routes/posts";
 import usersRoutes from "./routes/users";
+import boardRoutes from "./routes/boards";
+import columnRoutes from "./routes/columns";
 
 const app = express();
 const server = http.createServer(app);
@@ -16,11 +18,18 @@ const io = new Server(server, {
 });
 const port = 8000;
 
-const notifier = new PostgresNotifier(process.env.DATABASE_URL!);
-const postsChannel = notifier.channel("posts");
+const postsNotifier = new PostgresNotifier(process.env.DATABASE_URL!);
+const postsChannel = postsNotifier.channel("posts");
+
+const columnsNotifier = new PostgresNotifier(process.env.DATABASE_URL!);
+const columnsChannel = columnsNotifier.channel("columns");
+
+const boardMembersNotifier = new PostgresNotifier(process.env.DATABASE_URL!);
+const boardMembersChannel = boardMembersNotifier.channel("board_members");
 
 io.on("connection", (socket) => {
   socket.join("posts");
+  socket.join("columns");
   console.log("a user connected");
 
   socket.on("disconnect", () => {
@@ -30,6 +39,10 @@ io.on("connection", (socket) => {
 
 postsChannel.subscribe((payload) => {
   io.to("posts").emit("post_updated", payload);
+});
+
+columnsChannel.subscribe((payload) => {
+  io.to("columns").emit("column_updated", payload);
 });
 
 server.listen(port, () => {
@@ -45,3 +58,5 @@ app.get("/", (req, res) => {
 
 app.use("/posts", postsRoutes);
 app.use("/users", usersRoutes);
+app.use("/boards", boardRoutes);
+app.use("/columns", columnRoutes);
