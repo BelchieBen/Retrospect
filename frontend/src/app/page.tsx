@@ -1,16 +1,12 @@
-import Link from "next/link";
-
-import { LatestPost } from "~/app/_components/post";
 import { getServerAuthSession } from "~/server/auth";
-import { api, HydrateClient } from "~/trpc/server";
-import { AddPostForm } from "./_components/post-form";
-import Posts from "./_components/realtime-post";
-import { ThemeToggle } from "./_components/theme-toggle";
+import { api } from "~/trpc/server";
 import Swimlanes from "./_components/swimlanes";
+import { redirect } from "next/navigation";
 
 export default async function Home() {
   const hello = await api.post.hello({ text: "from tRPC" });
   const session = await getServerAuthSession();
+  if (!session?.user) redirect("/auth/signin");
 
   if (session?.user) {
     void api.post.getLatest.prefetch();

@@ -25,10 +25,10 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${GeistSans.variable}`}
+      className={`${GeistSans.variable} h-full`}
       suppressHydrationWarning
     >
-      <body>
+      <body className="h-full">
         <TRPCReactProvider>
           <ThemeProvider
             attribute="class"
@@ -37,15 +37,21 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <Providers session={session}>
-              <div className="[--header-height:calc(theme(spacing.14))]">
-                <SidebarProvider className="flex flex-col">
-                  <SiteHeader />
-                  <div className="flex flex-1">
-                    <AppSidebar />
-                    <SidebarInset>{children}</SidebarInset>
-                  </div>
-                </SidebarProvider>
-              </div>
+              {session?.user ? (
+                <div className="[--header-height:calc(theme(spacing.14))]">
+                  <SidebarProvider className="flex flex-col">
+                    <SiteHeader />
+                    <div className="flex flex-1">
+                      <AppSidebar />
+                      <SidebarInset>{children}</SidebarInset>
+                    </div>
+                  </SidebarProvider>
+                </div>
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  {children}
+                </div>
+              )}
             </Providers>
           </ThemeProvider>
         </TRPCReactProvider>
