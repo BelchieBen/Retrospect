@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 import { NavMain } from "~/components/nav-main";
-import { NavProjects } from "~/components/nav-projects";
+import { NavProjects } from "~/components/nav-workspace";
 import { NavSecondary } from "~/components/nav-secondary";
 import { NavUser } from "~/components/nav-user";
 import {
@@ -32,7 +32,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar";
-import { Separator } from "@radix-ui/react-separator";
 
 const data = {
   user: {
@@ -43,7 +42,7 @@ const data = {
   navMain: [
     {
       title: "Boards",
-      url: "#",
+      url: "/boards",
       icon: BookMarked,
       isActive: true,
     },

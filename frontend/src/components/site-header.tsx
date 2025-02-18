@@ -1,6 +1,7 @@
 "use client";
 
 import { SidebarIcon } from "lucide-react";
+import Link from "next/link";
 import { ThemeToggle } from "~/app/_components/theme-toggle";
 
 import { SearchForm } from "~/components/search-form";
@@ -44,7 +45,7 @@ export function SiteHeader() {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb> */}
-        <p>Retrospect</p>
+        <Link href="/">Retrospect</Link>
         <SearchForm className="w-full sm:ml-auto sm:w-auto" />
         <ThemeToggle />
       </div>
