@@ -1,6 +1,6 @@
 import { getServerAuthSession } from "~/server/auth";
 import { api } from "~/trpc/server";
-import Swimlanes from "./_components/swimlanes";
+import BoardColumns from "./_components/board-columns";
 import { redirect } from "next/navigation";
 
 export default async function Home() {
@@ -69,6 +69,6 @@ export default async function Home() {
     //   <AddPostForm />
     //   <Posts />
     // </div>
-    <Swimlanes />
+    <BoardColumns />
   );
 }
