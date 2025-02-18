@@ -9,4 +9,13 @@ export const boardRouter = createTRPCRouter({
       include: { BoardMembers: { include: { board: true } } },
     });
   }),
+
+  getBoard: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.boards.findUnique({
+        where: { id: input.id },
+        include: { columns: true },
+      });
+    }),
 });
