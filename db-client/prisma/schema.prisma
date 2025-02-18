@@ -23,6 +23,101 @@ model Post {
     @@index([name])
 }
 
+model Boards {
+    id        String      @id @default(cuid())
+    name      String
+    columns   Column[]
+    archived  Boolean     @default(false)
+    archivedAt DateTime?
+    ownerId   String
+    owner     User     @relation(fields: [ownerId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    BoardMembers BoardMembers[]
+
+    @@index([name])
+}
+
+model Column {
+    id        String      @id @default(cuid())
+    name      String
+    position  Int
+    boardId   String
+    board     Boards      @relation(fields: [boardId], references: [id])
+    cards     Card[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([name])
+}
+
+model Card {
+    id        String      @id @default(cuid())
+    name      String
+    description String?
+    archived  Boolean     @default(false)
+    archivedAt DateTime?
+    position  Int
+    createdById String
+    createdBy User @relation(fields: [createdById], references: [id])
+    columnId  String
+    column    Column      @relation(fields: [columnId], references: [id])
+    attachments Attachment[]
+    comments    Comment[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([name])
+    CardMembers CardMembers[]
+}
+
+model Attachment {
+    id        String      @id @default(cuid())
+    name      String
+    url       String
+    cardId    String
+    card      Card        @relation(fields: [cardId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([name])
+}
+
+model Comment {
+    id        String      @id @default(cuid())
+    value      String
+    cardId    String
+    card      Card        @relation(fields: [cardId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([value])
+}
+
+model BoardMembers {
+    id        String      @id @default(cuid())
+    boardId   String
+    userId    String
+    board     Boards      @relation(fields: [boardId], references: [id])
+    user      User        @relation(fields: [userId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([boardId, userId])
+}
+
+model CardMembers {
+    id        String      @id @default(cuid())
+    cardId    String
+    userId    String
+    card      Card        @relation(fields: [cardId], references: [id])
+    user      User        @relation(fields: [userId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([cardId, userId])
+}
+
 // Necessary for Next auth
 model Account {
     id                       String  @id @default(cuid())
@@ -60,6 +155,14 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
+
+    Boards Boards[]
+
+    Card Card[]
+
+    BoardMembers BoardMembers[]
+
+    CardMembers CardMembers[]
 }
 
 model VerificationToken {
