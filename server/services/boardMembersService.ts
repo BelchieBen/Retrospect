@@ -1,3 +1,20 @@
+import { db } from "../db";
+
+interface AddToBoardArgs {
+  id: string;
+  boardId: string;
+}
+
+interface RemoveFromBoardArgs {
+  id: string;
+  boardId: string;
+}
+
+interface FindByIdArgs {
+  id: string;
+  boardId: string;
+}
+
 export default class BoardMembersService {
   id: string;
 
@@ -5,23 +22,29 @@ export default class BoardMembersService {
     this.id = id;
   }
 
-  async addToBoard(id: string, boardId: string) {
+  async addToBoard({ id, boardId }: AddToBoardArgs) {
     try {
+      // Add implementation here
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
 
-  async removeFromBoard(id: string, boardId: string) {
+  async removeFromBoard({ id, boardId }: RemoveFromBoardArgs) {
     try {
+      // Add implementation here
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
 
-  async findById(id: string, boardId: string) {
+  async findById({ id, boardId }: FindByIdArgs) {
     try {
+      // Add implementation here
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }

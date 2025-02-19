@@ -1,48 +1,88 @@
-export default class CardService {
+import { db } from "../db";
+
+interface CreateCommentArgs {
+  data: any;
+}
+
+interface UpdateCommentArgs {
+  id: string;
+  data: any;
+}
+
+interface RemoveCommentArgs {
+  id: string;
+}
+
+interface DestroyAllCommentsArgs {
+  ids: string[];
+}
+
+interface FindCommentByIdArgs {
+  id: string;
+}
+
+interface RearrangeCommentArgs {
+  id: string;
+  order: number;
+}
+
+export default class CommentService {
   id: string;
 
   constructor(id: string) {
     this.id = id;
   }
 
-  async create(data: any) {
+  async create({ data }: CreateCommentArgs) {
     try {
+      // Add implementation here
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
 
-  async update(id: string, data: any) {
+  async update({ id, data }: UpdateCommentArgs) {
     try {
+      // Add implementation here
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
 
-  async remove(id: string) {
+  async remove({ id }: RemoveCommentArgs) {
     try {
+      // Add implementation here
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
 
-  async destroyAll(ids: string[]) {
+  async destroyAll({ ids }: DestroyAllCommentsArgs) {
     try {
+      // Add implementation here
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
 
-  async findById(id: string) {
+  async findById({ id }: FindCommentByIdArgs) {
     try {
+      // Add implementation here
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
 
-  async rearrange(id: string, order: number) {
+  async rearrange({ id, order }: RearrangeCommentArgs) {
     try {
+      // Add implementation here
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
