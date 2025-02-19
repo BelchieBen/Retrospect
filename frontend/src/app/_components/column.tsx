@@ -16,6 +16,7 @@ import {
 import { backendUrl } from "~/constants/backendUrl";
 import debounce from "lodash/debounce";
 import { useSession } from "next-auth/react";
+import { SimpleCard } from "~/components/cardForm";
 
 export default function BoardColumn({
   column,
@@ -102,9 +103,10 @@ export default function BoardColumn({
 
       <div className="flex flex-col gap-4 p-2">
         {column.cards.map((card) => (
-          <div key={card.id} className="h-9 w-full rounded-sm bg-primary">
-            {card.name}
-          </div>
+          // <div key={card.id} className="h-9 w-full rounded-sm bg-primary">
+          //   {card.name}
+          // </div>
+          <SimpleCard key={card.id} />
         ))}
       </div>
       <div className="flex p-1">

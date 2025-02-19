@@ -95,7 +95,7 @@ export function SimpleCard() {
   return (
     <>
       <Card
-        className="z-0 w-[350px] cursor-pointer"
+        className="z-0 cursor-pointer"
         style={{ border: isHovered ? "2px solid white" : "none" }}
         onMouseOver={() => setIsHovered(true)}
         onMouseOut={() => setIsHovered(false)}

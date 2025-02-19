@@ -8,7 +8,7 @@ export const Avatars = () => {
   return (
     <div className="flex items-center justify-end">
       <div className="flex items-center justify-start">
-        <Avatar>
+        <Avatar className="h-6 w-6">
           <AvatarImage
             src={session?.user?.image ?? ""}
             alt={session?.user?.name ?? ""}
