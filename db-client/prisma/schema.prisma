@@ -52,7 +52,7 @@ model Column {
 
 model Card {
     id        String      @id @default(cuid())
-    name      String
+    name      String?
     description String?
     archived  Boolean     @default(false)
     archivedAt DateTime?
