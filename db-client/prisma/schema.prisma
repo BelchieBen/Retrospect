@@ -34,6 +34,7 @@ model Boards {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
     BoardMembers BoardMembers[]
+    cards Card[]
 
     @@index([name])
 }
@@ -43,7 +44,7 @@ model Column {
     name      String?
     position  Int
     boardId   String
-    board     Boards      @relation(fields: [boardId], references: [id])
+    board     Boards      @relation(fields: [boardId], references: [id], onDelete: Cascade)
     cards     Card[]
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -59,8 +60,10 @@ model Card {
     position  Int
     createdById String
     createdBy User @relation(fields: [createdById], references: [id])
-    columnId  String
-    column    Column      @relation(fields: [columnId], references: [id])
+    columnId  String?
+    column    Column?      @relation(fields: [columnId], references: [id], onDelete: SetNull)
+    boardId   String
+    board     Boards      @relation(fields: [boardId], references: [id], onDelete: Cascade)
     attachments Attachment[]
     comments    Comment[]
     createdAt DateTime @default(now())
@@ -75,7 +78,7 @@ model Attachment {
     name      String
     url       String
     cardId    String
-    card      Card        @relation(fields: [cardId], references: [id])
+    card      Card        @relation(fields: [cardId], references: [id], onDelete: Cascade)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
@@ -86,7 +89,7 @@ model Comment {
     id        String      @id @default(cuid())
     value      String
     cardId    String
-    card      Card        @relation(fields: [cardId], references: [id])
+    card      Card        @relation(fields: [cardId], references: [id], onDelete: Cascade)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
@@ -97,7 +100,7 @@ model BoardMembers {
     id        String      @id @default(cuid())
     boardId   String
     userId    String
-    board     Boards      @relation(fields: [boardId], references: [id])
+    board     Boards      @relation(fields: [boardId], references: [id], onDelete: Cascade)
     user      User        @relation(fields: [userId], references: [id])
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
