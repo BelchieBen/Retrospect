@@ -6,11 +6,12 @@ import { api } from "~/trpc/server";
 
 export default async function BoardPage({
   params,
-}: Readonly<{ params: { id: string } }>) {
+}: Readonly<{ params: Promise<{ id: string }> }>) {
+  const id = (await params).id;
   const session = await getServerAuthSession();
   if (!session?.user) redirect("/auth/signin");
 
-  const board = await api.board.getBoard({ id: params.id });
+  const board = await api.board.getBoard({ id });
   if (!board) redirect("/404");
 
   return (
