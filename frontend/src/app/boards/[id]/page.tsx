@@ -15,7 +15,7 @@ export default async function BoardPage({
   if (!board) redirect("/404");
 
   return (
-    <div className="m-4 h-full w-full">
+    <div className="m-4 flex flex-col gap-4">
       <h1 className="text-2xl">{board.name}</h1>
       <BoardColumns initialBoard={board} />
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Command,
   Folder,
   MoreHorizontal,
   Share,
@@ -24,15 +25,16 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "~/components/ui/sidebar";
+import { type Prisma } from "@prisma/client";
+import Link from "next/link";
 
 export function NavProjects({
-  projects,
+  boards,
 }: Readonly<{
-  projects: {
-    name: string;
-    url: string;
-    icon: LucideIcon;
-  }[];
+  boards:
+    | Prisma.BoardMembersGetPayload<{ include: { board: true } }>[]
+    | undefined
+    | null;
 }>) {
   const { isMobile } = useSidebar();
 
@@ -40,13 +42,13 @@ export function NavProjects({
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Your Boards</SidebarGroupLabel>
       <SidebarMenu>
-        {projects.map((item) => (
-          <SidebarMenuItem key={item.name}>
+        {boards?.map((board) => (
+          <SidebarMenuItem key={board.board.name}>
             <SidebarMenuButton asChild>
-              <a href={item.url}>
-                <item.icon />
-                <span>{item.name}</span>
-              </a>
+              <Link href={`/boards/${board.board.id}`}>
+                <Command />
+                <span>{board.board.name}</span>
+              </Link>
             </SidebarMenuButton>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
