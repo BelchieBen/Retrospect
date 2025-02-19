@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@BelchieBen/retrospect-db-client": "^1.0.3",
+    "axios": "^1.7.9",
     "cors": "^2.8.5",
     "express": "^4.21.1",
     "pg-realtime": "^1.0.3",
