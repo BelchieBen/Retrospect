@@ -1,4 +1,23 @@
 import { db } from "../db";
+
+interface CreateBoardArgs {
+  title: string;
+  ownerId: string;
+}
+
+interface UpdateBoardArgs {
+  boardId: string;
+  title: string;
+}
+
+interface DeleteBoardArgs {
+  boardId: string;
+}
+
+interface FindByIdArgs {
+  boardId: string;
+}
+
 export default class BoardService {
   id: string;
 
@@ -6,7 +25,7 @@ export default class BoardService {
     this.id = id;
   }
 
-  async create(title: string, ownerId: string) {
+  async create({ title, ownerId }: CreateBoardArgs) {
     try {
       const board = await db.boards.create({
         data: {
@@ -26,7 +45,7 @@ export default class BoardService {
     }
   }
 
-  async update(boardId: string, title: string) {
+  async update({ boardId, title }: UpdateBoardArgs) {
     try {
       const board = await db.boards.update({
         data: {
@@ -43,7 +62,7 @@ export default class BoardService {
     }
   }
 
-  async delete(boardId: string) {
+  async delete({ boardId }: DeleteBoardArgs) {
     try {
       await db.boards.delete({
         where: {
@@ -56,7 +75,7 @@ export default class BoardService {
     }
   }
 
-  async findById(boardId: string) {
+  async findById({ boardId }: FindByIdArgs) {
     try {
       const board = await db.boards.findFirst({
         where: {
