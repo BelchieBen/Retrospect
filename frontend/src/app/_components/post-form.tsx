@@ -31,7 +31,7 @@ export function AddPostForm() {
   });
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    await axios.post(`${backendUrl}/post`, data);
+    await axios.post(`${backendUrl}/posts`, data);
     form.reset();
   }
 

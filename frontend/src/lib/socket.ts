@@ -1,11 +1,10 @@
 import { io, type Socket } from "socket.io-client";
-
-const URL = "http://localhost:8000";
+import { env } from "~/env";
 
 let socket: Socket;
 
 export const connectSocket = () => {
-  socket = io(URL);
+  socket = io(env.NEXT_PUBLIC_SOCKET_URL);
   return socket;
 };
 

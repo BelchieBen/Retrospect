@@ -9,14 +9,7 @@ export default async function SigninPage() {
 
   const providers = await getProviders();
   return (
-    <div
-      className="flex h-full flex-col items-center justify-center gap-4"
-      style={{
-        backgroundImage:
-          "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5) ), url(/signin.jpg)",
-        backgroundSize: "cover",
-      }}
-    >
+    <div className="flex h-full flex-col items-center justify-center gap-4">
       {Object.values(providers ?? []).map((provider) => (
         <div key={provider.name}>
           <SignInButton provider={provider} />
