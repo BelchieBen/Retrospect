@@ -1,10 +1,17 @@
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
 interface CreateCardArgs {
   data: any;
 }
 
 interface UpdateCardArgs {
   id: string;
-  data: any;
+  title: string | null;
+  columnId: string | null;
+  position: number | null;
+  attachments: { name: string; url: string }[] | null;
 }
 
 interface RemoveCardArgs {
@@ -40,11 +47,30 @@ export default class CardService {
     }
   }
 
-  async update({ id, data }: UpdateCardArgs) {
+  async update({ id, title, columnId, position, attachments }: UpdateCardArgs) {
     try {
-      // Add implementation here
+      const updatedCard = await prisma.card.update({
+        where: { id: id },
+        data: {
+          name: title ?? undefined,
+          columnId: columnId ?? undefined,
+          position: position ?? undefined,
+          attachments: attachments ? {
+            deleteMany: {},
+            create: attachments.map(attachment => ({
+              name: attachment.name,
+              url: attachment.url,
+            })),
+          } : undefined,
+        },
+        include: {
+          attachments: true,
+        },
+      });
+
+      return updatedCard;
     } catch (error) {
-      console.error(error);
+      console.error('Error updating card:', error);
       throw error;
     }
   }
