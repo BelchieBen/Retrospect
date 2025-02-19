@@ -77,10 +77,11 @@ export default class BoardService {
 
   async findById({ boardId }: FindByIdArgs) {
     try {
-      const board = await db.boards.findFirst({
+      const board = await db.boards.findUnique({
         where: {
           id: boardId,
         },
+        include: { columns: { include: { cards: true } } },
       });
       return board;
     } catch (error) {
