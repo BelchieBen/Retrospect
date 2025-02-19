@@ -90,7 +90,7 @@ export function SimpleCard() {
   };
 
   const handleNewComment = () => {
-    setCommentsCount(commentsCount + 1); // Increment comments count when a new comment is added
+    setCommentsCount(commentsCount + 1);
   };
   return (
     <>

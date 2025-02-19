@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
-import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar"; // Adjust the import path as necessary
-import { Input } from "~/components/ui/input"; // Adjust the import path as necessary
-import { Button } from "~/components/ui/button"; // Adjust the import path as necessary
+import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
 import { useSession } from "next-auth/react";
 
 type Comment = {
