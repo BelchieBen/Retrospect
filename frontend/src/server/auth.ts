@@ -5,6 +5,7 @@ import {
   type NextAuthOptions,
 } from "next-auth";
 import AzureADProvider from "next-auth/providers/azure-ad";
+import GoogleProvider from "next-auth/providers/google";
 
 import { env } from "~/env";
 import { db } from "~/server/db";
@@ -47,6 +48,10 @@ export const authOptions: NextAuthOptions = {
       clientSecret: env.AZURE_AD_CLIENT_SECRET,
       tenantId: env.AZURE_AD_TENANT_ID,
       authorization: { params: { scope: "openid email User.Read profile" } },
+    }),
+    GoogleProvider({
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
     }),
   ],
   pages: {
