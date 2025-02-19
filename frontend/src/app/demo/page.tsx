@@ -8,7 +8,6 @@ export default async function RealtimeDemoPage() {
   const session = await getServerAuthSession();
   if (!session?.user) redirect("/auth/signin");
 
-export default function RealtimeDemoPage() {
   return (
     <>
       <AddPostForm />
