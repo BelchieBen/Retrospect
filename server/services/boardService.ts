@@ -1,3 +1,4 @@
+import { db } from "../db";
 export default class BoardService {
   id: string;
 
@@ -5,42 +6,67 @@ export default class BoardService {
     this.id = id;
   }
 
-  async create(data: any) {
+  async create(title: string, ownerId: string) {
     try {
+      const board = await db.boards.create({
+        data: {
+          name: title,
+          ownerId: ownerId,
+          BoardMembers: {
+            create: {
+              userId: ownerId,
+            },
+          },
+        },
+      });
+      return board;
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
 
-  async update(id: string, data: any) {
+  async update(boardId: string, title: string) {
     try {
+      const board = await db.boards.update({
+        data: {
+          name: title,
+        },
+        where: {
+          id: boardId,
+        },
+      });
+      return board;
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
 
-  async remove(id: string) {
+  async delete(boardId: string) {
     try {
+      await db.boards.delete({
+        where: {
+          id: boardId,
+        },
+      });
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
 
-  async destroyAll(ids: string[]) {
+  async findById(boardId: string) {
     try {
+      const board = await db.boards.findFirst({
+        where: {
+          id: boardId,
+        },
+      });
+      return board;
     } catch (error) {
+      console.error(error);
       throw error;
     }
-  }
-
-  async findById(id: string) {
-    try {
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async import(data: any) {
-    return this.create();
   }
 }
