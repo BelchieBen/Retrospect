@@ -8,6 +8,7 @@ import postsRoutes from "./routes/posts";
 import usersRoutes from "./routes/users";
 import boardRoutes from "./routes/boards";
 import columnRoutes from "./routes/columns";
+import cardRoutes from "./routes/cards";
 
 const app = express();
 const server = http.createServer(app);
@@ -27,6 +28,9 @@ const columnsChannel = columnsNotifier.channel("columns");
 const boardMembersNotifier = new PostgresNotifier(process.env.DATABASE_URL!);
 const boardMembersChannel = boardMembersNotifier.channel("board_members");
 
+const cardsNotifier = new PostgresNotifier(process.env.DATABASE_URL!);
+const cardsChannel = cardsNotifier.channel("cards");
+
 io.on("connection", (socket) => {
   socket.join("posts");
   socket.join("columns");
@@ -45,6 +49,10 @@ columnsChannel.subscribe((payload) => {
   io.to("columns").emit("column_updated", payload);
 });
 
+cardsChannel.subscribe((payload) => {
+  io.to("cards").emit("card_updated", payload);
+});
+
 server.listen(port, () => {
   console.log(`listening on port ${port}`);
 });
@@ -60,3 +68,4 @@ app.use("/posts", postsRoutes);
 app.use("/users", usersRoutes);
 app.use("/boards", boardRoutes);
 app.use("/columns", columnRoutes);
+app.use("/cards", cardRoutes);

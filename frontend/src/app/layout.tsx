@@ -25,10 +25,10 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${GeistSans.variable} h-full`}
+      className={`${GeistSans.variable}`}
       suppressHydrationWarning
     >
-      <body className="h-full">
+      <body>
         <TRPCReactProvider>
           <ThemeProvider
             attribute="class"
@@ -48,7 +48,7 @@ export default async function RootLayout({
                   </SidebarProvider>
                 </div>
               ) : (
-                <div className="flex h-full w-full items-center justify-center">
+                <div className="flex items-center justify-center">
                   {children}
                 </div>
               )}

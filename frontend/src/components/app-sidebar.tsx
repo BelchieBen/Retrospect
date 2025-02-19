@@ -32,6 +32,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar";
+import { api } from "~/trpc/react";
 
 const data = {
   user: {
@@ -92,26 +93,10 @@ const data = {
       icon: Send,
     },
   ],
-  projects: [
-    {
-      name: "Spartan",
-      url: "#",
-      icon: Command,
-    },
-    {
-      name: "Cerbrus",
-      url: "#",
-      icon: Snowflake,
-    },
-    {
-      name: "Valkryie",
-      url: "#",
-      icon: Map,
-    },
-  ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: boards } = api.board.getBoards.useQuery();
   return (
     <Sidebar
       className="top-[--header-height] !h-[calc(100svh-var(--header-height))]"
@@ -136,7 +121,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavProjects boards={boards?.BoardMembers} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
