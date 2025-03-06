@@ -1,14 +1,15 @@
-import { useRef, useEffect } from "react";
+import * as React from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "~/lib/utils";
 
-export function TextareaAutosize(
-  props: Readonly<React.TextareaHTMLAttributes<HTMLTextAreaElement>>,
-  className: string | undefined,
-) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+const TextareaAutosize = React.forwardRef<
+  HTMLTextAreaElement,
+  React.ComponentProps<"textarea">
+>(({ className, ...props }, ref) => {
+  const innerRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    const textarea = textareaRef.current;
+    const textarea = innerRef.current;
     if (textarea) {
       const resizeTextarea = () => {
         textarea.style.height = "auto";
@@ -24,6 +25,8 @@ export function TextareaAutosize(
     }
   }, []);
 
+  React.useImperativeHandle(ref, () => innerRef.current);
+
   return (
     <textarea
       {...props}
@@ -31,8 +34,11 @@ export function TextareaAutosize(
         "flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
         className,
       )}
-      ref={textareaRef}
+      ref={innerRef}
       style={{ overflow: "hidden", resize: "none" }}
     />
   );
-}
+});
+TextareaAutosize.displayName = "TextareaAutosize";
+
+export { TextareaAutosize };
