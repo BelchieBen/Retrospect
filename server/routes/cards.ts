@@ -34,8 +34,9 @@ router.post("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { name, columnId, position, attachments } = req.body as {
+  const { name, description, columnId, position, attachments } = req.body as {
     name: string | null;
+    description: string | undefined;
     columnId: string | null;
     position: number | null;
     attachments: { name: string; url: string }[] | null;
@@ -46,6 +47,7 @@ router.put("/:id", async (req, res) => {
       where: { id: id },
       data: {
         name: name ?? undefined,
+        description: description ?? undefined,
         columnId: columnId ?? undefined,
         position: position ?? undefined,
         attachments: attachments

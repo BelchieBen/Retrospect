@@ -13,6 +13,25 @@ import moment from "moment";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useSession } from "next-auth/react";
 import { Input } from "./ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
+import { z } from "zod";
+import { backendUrl } from "~/constants/backendUrl";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "./ui/form";
+import { toast } from "sonner";
+import React from "react";
+
+const FormSchema = z.object({
+  description: z.string().optional(),
+});
 
 export default function CardDialog({
   card,
@@ -26,6 +45,24 @@ export default function CardDialog({
   const commentInputRef = useRef<HTMLInputElement>(null);
   const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
   const { data: session } = useSession();
+
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      description: card.description ?? "",
+    },
+  });
+
+  async function onSubmit(data: z.infer<typeof FormSchema>) {
+    if (!data.description) setEditDescription(false);
+    const response = await axios.put(`${backendUrl}/cards/${card.id}`, data);
+    if (response.status === 200) {
+      toast.success("Card updated successfully");
+      setEditDescription(false);
+    } else {
+      toast.error("Failed to update card");
+    }
+  }
 
   return (
     <DialogContent className="sm:max-w-[425px]">
@@ -45,29 +82,65 @@ export default function CardDialog({
           <div className="w-full">
             {editDescription ? (
               <div className="flex flex-col gap-2">
-                <TextareaAutosize rows={6} ref={descriptionInputRef} />
-                <div className="flex gap-2">
-                  <Button className="w-fit">Save</Button>
-                  <Button
-                    variant={"outline"}
-                    className="w-fit bg-secondary"
-                    onClick={() => setEditDescription(false)}
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-4"
                   >
-                    Cancel
-                  </Button>
-                </div>
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Post Title</FormLabel>
+                          <FormControl>
+                            <TextareaAutosize
+                              rows={6}
+                              {...field}
+                              ref={descriptionInputRef}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex gap-2">
+                      <Button type="submit">Save</Button>
+                      <Button
+                        variant={"outline"}
+                        className="w-fit bg-secondary"
+                        onClick={() => setEditDescription(false)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
               </div>
             ) : (
-              <Button
-                variant={"ghost"}
-                className="h-24 w-full items-start justify-start rounded-md bg-secondary p-2"
+              <button
                 onClick={() => {
                   setEditDescription(true);
-                  setTimeout(() => descriptionInputRef.current?.focus(), 0);
+                  setTimeout(() => {
+                    if (descriptionInputRef.current) {
+                      const length = descriptionInputRef.current.value.length;
+                      descriptionInputRef.current.focus();
+                      descriptionInputRef.current.setSelectionRange(
+                        length,
+                        length,
+                      );
+                    }
+                  }, 0);
                 }}
+                className="flex min-h-24 w-full items-start justify-start rounded-md bg-secondary p-2 text-left"
               >
-                <p>Add a detailed description...</p>
-              </Button>
+                <div
+                  className="h-full w-full text-sm"
+                  style={{ whiteSpace: "pre-wrap" }}
+                >
+                  {card.description ?? "Add a detailed description"}
+                </div>
+              </button>
             )}
           </div>
         </div>
