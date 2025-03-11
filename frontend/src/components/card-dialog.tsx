@@ -126,9 +126,9 @@ export default function CardDialog({
       gifUrl,
     });
     if (response.status === 200) {
-      toast.success("GIF updated successfully");
+      toast.success("GIF uploaded successfully");
     } else {
-      toast.error("Failed to update GIF");
+      toast.error("Failed to upload GIF");
     }
   }
 
