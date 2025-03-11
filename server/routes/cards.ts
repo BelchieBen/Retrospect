@@ -34,13 +34,15 @@ router.post("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { name, description, columnId, position, attachments } = req.body as {
-    name: string | null;
-    description: string | undefined;
-    columnId: string | null;
-    position: number | null;
-    attachments: { name: string; url: string }[] | null;
-  };
+  const { name, description, columnId, position, attachments, gifUrl } =
+    req.body as {
+      name: string | null;
+      description: string | undefined;
+      gifUrl: string | undefined;
+      columnId: string | null;
+      position: number | null;
+      attachments: { name: string; url: string }[] | null;
+    };
 
   try {
     const updatedCard = await db.card.update({
@@ -48,6 +50,7 @@ router.put("/:id", async (req, res) => {
       data: {
         name: name ?? undefined,
         description: description ?? undefined,
+        gifUrl: gifUrl ?? undefined,
         columnId: columnId ?? undefined,
         position: position ?? undefined,
         attachments: attachments

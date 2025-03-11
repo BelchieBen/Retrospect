@@ -51,7 +51,7 @@ export default function CardDialog({
   const [editDescription, setEditDescription] = useState(false);
   const [addComment, setAddComment] = useState(false);
   const [giphySearchTerm, setGiphySearchTerm] = useState("");
-  const [gifUrl, setGifUrl] = useState("");
+  const [gifUrl, setGifUrl] = useState(card.gifUrl ?? "");
   const commentInputRef = useRef<HTMLInputElement>(null);
   const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
   const { data: session } = useSession();
@@ -119,6 +119,17 @@ export default function CardDialog({
 
   function fetchGifsGrid(offset: number) {
     return giphy.search(giphySearchTerm || "trending", { offset, limit: 10 });
+  }
+
+  async function saveGif(gifUrl: string) {
+    const response = await axios.put(`${backendUrl}/cards/${card.id}`, {
+      gifUrl,
+    });
+    if (response.status === 200) {
+      toast.success("GIF updated successfully");
+    } else {
+      toast.error("Failed to update GIF");
+    }
   }
 
   return (
@@ -244,6 +255,7 @@ export default function CardDialog({
                 onGifClick={(gif, e) => {
                   e.preventDefault();
                   setGifUrl(gif.images.fixed_height.url);
+                  void saveGif(gif.images.fixed_height.url);
                 }}
               />
             </div>

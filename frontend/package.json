@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@BelchieBen/retrospect-db-client": "^1.0.4",
+    "@BelchieBen/retrospect-db-client": "^1.0.5",
     "@giphy/react-components": "^10.0.1",
     "@hookform/resolvers": "^3.9.1",
     "@next-auth/prisma-adapter": "^1.0.7",
