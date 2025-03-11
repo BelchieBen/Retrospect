@@ -66,6 +66,7 @@ model Card {
     boardId   String
     board     Boards      @relation(fields: [boardId], references: [id], onDelete: Cascade)
     attachments Attachment[]
+    gifUrl    String?
     comments    Comment[]
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
