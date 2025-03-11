@@ -25,6 +25,7 @@ export default function BoardColumns({
           cards: {
             include: {
               comments: { include: { createdBy: true } };
+              createdBy: true;
               column: true;
             };
           };

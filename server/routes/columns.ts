@@ -36,7 +36,11 @@ router.get("/:boardId", async (req, res) => {
     },
     include: {
       cards: {
-        include: { comments: { include: { createdBy: true } }, column: true },
+        include: {
+          comments: { include: { createdBy: true } },
+          createdBy: true,
+          column: true,
+        },
         orderBy: { createdAt: "asc" },
       },
     },

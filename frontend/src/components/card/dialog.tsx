@@ -1,21 +1,18 @@
-import { Logs, Text, Tv2, Videotape } from "lucide-react";
-import { Button } from "./ui/button";
+import { Text, Tv2, Videotape } from "lucide-react";
+import { Button } from "~/components/ui/button";
 import {
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "./ui/dialog";
-import { TextareaAutosize } from "./ui/textarea-autosize";
+} from "~/components/ui/dialog";
+import { TextareaAutosize } from "~/components/ui/textarea-autosize";
 import { type Prisma } from "@prisma/client";
-import React, { useEffect, useRef, useState } from "react";
-import moment from "moment";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { useSession } from "next-auth/react";
-import { Input } from "./ui/input";
+import React, { useRef, useState } from "react";
+import { Input } from "~/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios, { type AxiosResponse } from "axios";
+import axios from "axios";
 import { z } from "zod";
 import { backendUrl } from "~/constants/backendUrl";
 import {
@@ -25,20 +22,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "./ui/form";
+} from "~/components/ui/form";
 import { toast } from "sonner";
-import { useQuery } from "react-query";
-import { useWebSocket } from "~/lib/WebsocketContext";
 import { Grid } from "@giphy/react-components";
 import giphy from "~/lib/giphy";
 import Image from "next/image";
+import CardComments from "./comments";
 
 const FormSchema = z.object({
   description: z.string().optional(),
-});
-
-const CommentFormSchema = z.object({
-  value: z.string().optional(),
 });
 
 export default function CardDialog({
@@ -49,44 +41,14 @@ export default function CardDialog({
   }>;
 }>) {
   const [editDescription, setEditDescription] = useState(false);
-  const [addComment, setAddComment] = useState(false);
   const [giphySearchTerm, setGiphySearchTerm] = useState("");
   const [gifUrl, setGifUrl] = useState(card.gifUrl ?? "");
-  const commentInputRef = useRef<HTMLInputElement>(null);
   const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
-  const { data: session } = useSession();
-  const { socket } = useWebSocket();
-
-  const { data: comments, refetch } = useQuery(
-    ["comments", card.id],
-    async () => {
-      const response: AxiosResponse<
-        Prisma.CommentGetPayload<{ include: { createdBy: true } }>[]
-      > = await axios.get(`${backendUrl}/comments/${card.id}`);
-
-      return response.data;
-    },
-  );
-
-  useEffect(() => {
-    if (socket) {
-      socket.on("comment_updated", async () => {
-        await refetch();
-      });
-    }
-  }, [socket]);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       description: card.description ?? "",
-    },
-  });
-
-  const commentForm = useForm<z.infer<typeof CommentFormSchema>>({
-    resolver: zodResolver(CommentFormSchema),
-    defaultValues: {
-      value: "",
     },
   });
 
@@ -96,22 +58,6 @@ export default function CardDialog({
     if (response.status === 200) {
       toast.success("Card updated successfully");
       setEditDescription(false);
-    } else {
-      toast.error("Failed to update card");
-    }
-  }
-
-  async function onCommentSubmit(data: z.infer<typeof CommentFormSchema>) {
-    if (!data.value) setAddComment(false);
-    const response = await axios.post(`${backendUrl}/comments`, {
-      ...data,
-      cardId: card.id,
-      userId: session?.user.id,
-    });
-    if (response.status === 200) {
-      toast.success("Card updated successfully");
-      setAddComment(false);
-      commentForm.reset();
     } else {
       toast.error("Failed to update card");
     }
@@ -261,98 +207,7 @@ export default function CardDialog({
               />
             </div>
           </div>
-          {/* Comments */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <Logs size={20} />
-              <p>Comments</p>
-            </div>
-            <div className="flex gap-2 p-2">
-              <Avatar>
-                <AvatarImage
-                  src={session?.user.image ?? ""}
-                  alt={session?.user.name ?? ""}
-                />
-                <AvatarFallback>BB</AvatarFallback>
-              </Avatar>
-              <div className="w-full">
-                {addComment ? (
-                  <div className="flex flex-col gap-2">
-                    <Form {...commentForm}>
-                      <form
-                        onSubmit={commentForm.handleSubmit(onCommentSubmit)}
-                        className="space-y-2"
-                      >
-                        <FormField
-                          control={commentForm.control}
-                          name="value"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Post Title</FormLabel>
-                              <FormControl>
-                                <Input {...field} ref={commentInputRef} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <div className="flex gap-2">
-                          <Button type="submit">Save</Button>
-                          <Button
-                            variant={"outline"}
-                            className="w-fit bg-secondary"
-                            onClick={() => setAddComment(false)}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </form>
-                    </Form>
-                  </div>
-                ) : (
-                  <Button
-                    variant={"ghost"}
-                    className="h-full w-full items-center justify-start rounded-md bg-secondary p-2"
-                    onClick={() => {
-                      setAddComment(true);
-                      setTimeout(() => commentInputRef.current?.focus(), 0);
-                    }}
-                  >
-                    <p>Write a comment...</p>
-                  </Button>
-                )}
-              </div>
-            </div>
-            <div className="w-full">
-              {comments?.map((comment) => (
-                <div
-                  key={comment.id}
-                  className="flex items-start gap-2 rounded-md p-2"
-                >
-                  <Avatar>
-                    <AvatarImage
-                      src={comment.createdBy.image ?? ""}
-                      alt={comment.createdBy.name ?? ""}
-                    />
-                    <AvatarFallback>BB</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm">{comment.createdBy.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {moment(comment.createdAt).format(
-                          "MMMM Do YYYY, h:mm:ss a",
-                        )}
-                      </p>
-                    </div>
-                    <div className="rounded-md bg-secondary p-2">
-                      <p>{comment.value}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <CardComments card={card} />
         </div>
       </div>
     </DialogContent>
