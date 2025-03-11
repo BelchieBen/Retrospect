@@ -121,12 +121,12 @@ export default function CardDialog({
     return giphy.search(giphySearchTerm || "trending", { offset, limit: 10 });
   }
 
-  async function saveGif(gifUrl: string) {
+  async function updateCardGif(gifUrl: string) {
     const response = await axios.put(`${backendUrl}/cards/${card.id}`, {
       gifUrl,
     });
     if (response.status === 200) {
-      toast.success("GIF uploaded successfully");
+      toast.success("GIF updated successfully");
     } else {
       toast.error("Failed to upload GIF");
     }
@@ -238,6 +238,7 @@ export default function CardDialog({
                   variant={"outline"}
                   onClick={() => {
                     setGifUrl("");
+                    void updateCardGif("");
                   }}
                 >
                   Remove GIF
@@ -255,7 +256,7 @@ export default function CardDialog({
                 onGifClick={(gif, e) => {
                   e.preventDefault();
                   setGifUrl(gif.images.fixed_height.url);
-                  void saveGif(gif.images.fixed_height.url);
+                  void updateCardGif(gif.images.fixed_height.url);
                 }}
               />
             </div>
