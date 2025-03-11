@@ -7,7 +7,7 @@ import "./src/env.js";
 /** @type {import("next").NextConfig} */
 const config = {
   images: {
-    domains: ["localhost", "media1.giphy.com"],
+    domains: ["localhost", "media1.giphy.com", "media2.giphy.com"],
   },
 };
 
