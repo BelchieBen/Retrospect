@@ -8,7 +8,14 @@ import {
 } from "~/components/ui/dialog";
 import { TextareaAutosize } from "~/components/ui/textarea-autosize";
 import { type Prisma } from "@prisma/client";
-import React, { type ChangeEvent, useCallback, useRef, useState } from "react";
+import React, {
+  type ChangeEvent,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { Input } from "~/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -46,6 +53,7 @@ export default function CardDialog({
   const [giphySearchTerm, setGiphySearchTerm] = useState("");
   const [gifUrl, setGifUrl] = useState(card.gifUrl ?? "");
   const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
+  const cardNameRef = useRef<HTMLTextAreaElement>(null);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -85,9 +93,15 @@ export default function CardDialog({
     [card.id],
   );
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setCardName(e.target.value);
+    resizeTextArea(e.target);
     void debouncedSaveCardTitle(e.target.value);
+  };
+
+  const resizeTextArea = (textArea: HTMLTextAreaElement) => {
+    textArea.style.height = "auto";
+    textArea.style.height = `${textArea.scrollHeight}px`;
   };
 
   const saveCardName = async (name: string) => {
@@ -96,6 +110,13 @@ export default function CardDialog({
       name,
     });
   };
+
+  useLayoutEffect(() => {
+    console.log("REF ", cardNameRef);
+    if (cardNameRef.current) {
+      resizeTextArea(cardNameRef.current);
+    }
+  }, [cardNameRef]);
 
   return (
     <DialogContent className="max-h-[90vh] gap-0 overflow-y-auto overflow-x-clip p-0 sm:max-w-[625px]">
@@ -111,11 +132,12 @@ export default function CardDialog({
             <div
               className={`flex w-full ${card.gifUrl ? "justify-between" : "justify-normal gap-2"} items-center`}
             >
-              <input
-                value={cardName}
-                type="text"
+              <textarea
+                ref={cardNameRef}
                 spellCheck
-                className="w-full bg-transparent p-1 focus-visible:border-b-2 focus-visible:border-solid focus-visible:border-primary focus-visible:outline-none"
+                rows={1}
+                value={cardName}
+                className="w-full resize-none overflow-hidden bg-transparent p-1 focus-visible:border-b-2 focus-visible:border-solid focus-visible:border-primary focus-visible:outline-none"
                 onChange={handleChange}
               />
             </div>

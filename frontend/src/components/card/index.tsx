@@ -31,11 +31,18 @@ export function Card({
 }>) {
   const [cardName, setCardName] = useState(card.name ?? "");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const cardNameRef = useRef<HTMLInputElement>(null);
+  const cardNameRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setCardName(card.name ?? "");
   }, [card]);
+
+  useEffect(() => {
+    if (cardNameRef.current) {
+      cardNameRef.current.style.height = "auto";
+      cardNameRef.current.style.height = `${cardNameRef.current.scrollHeight}px`;
+    }
+  }, [cardName, isEditingTitle]);
 
   const saveCardName = async (name: string) => {
     setCardName(name);
@@ -49,8 +56,10 @@ export function Card({
     [card.id],
   );
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setCardName(e.target.value);
+    e.target.style.height = "auto";
+    e.target.style.height = `${e.target.scrollHeight}px`;
     void debouncedSaveColumnTitle(e.target.value);
   };
 
@@ -74,7 +83,16 @@ export function Card({
                       // Add your button click logic here
                       setIsEditingTitle(!isEditingTitle);
                       if (!isEditingTitle) {
-                        setTimeout(() => cardNameRef.current?.focus(), 0);
+                        setTimeout(() => {
+                          if (cardNameRef.current) {
+                            const length = cardNameRef.current.value.length;
+                            cardNameRef.current.focus();
+                            cardNameRef.current.setSelectionRange(
+                              length,
+                              length,
+                            );
+                          }
+                        }, 0);
                       }
                     }}
                   >
@@ -112,9 +130,8 @@ export function Card({
                   <X className="h-4 w-4 text-white" />
                 </button>
               </div>
-              <input
-                className="h-9 w-full rounded-sm bg-transparent px-2 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
-                type="text"
+              <textarea
+                className="w-full resize-none rounded-sm bg-transparent px-2 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
                 ref={cardNameRef}
                 value={cardName}
                 onKeyDown={(e) => {
@@ -123,6 +140,7 @@ export function Card({
                   }
                 }}
                 onChange={handleChange}
+                rows={1}
               />
               <div className="flex w-full items-end justify-end">
                 <Avatar className="h-6 w-6">
@@ -156,9 +174,8 @@ export function Card({
             </Button>
           </DialogTrigger>
         ) : (
-          <input
-            className="m-1 h-9 w-full rounded-sm bg-transparent px-2 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
-            type="text"
+          <textarea
+            className="m-1 w-full resize-none rounded-sm bg-transparent px-2 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
             ref={cardNameRef}
             value={cardName}
             onKeyDown={(e) => {
@@ -167,6 +184,7 @@ export function Card({
               }
             }}
             onChange={handleChange}
+            rows={1}
           />
         )}
 
@@ -177,7 +195,13 @@ export function Card({
         onClick={() => {
           setIsEditingTitle(!isEditingTitle);
           if (!isEditingTitle) {
-            setTimeout(() => cardNameRef.current?.focus(), 0);
+            setTimeout(() => {
+              if (cardNameRef.current) {
+                const length = cardNameRef.current.value.length;
+                cardNameRef.current.focus();
+                cardNameRef.current.setSelectionRange(length, length);
+              }
+            }, 0);
           }
         }}
       >
