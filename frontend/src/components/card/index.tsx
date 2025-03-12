@@ -66,6 +66,20 @@ export function Card({
               >
                 <div className="relative h-32 w-full">
                   <Image src={card.gifUrl} fill alt={"GIF"} />
+                  <div
+                    role="button"
+                    className="absolute right-0 top-0 m-2 rounded-full bg-secondary p-1 shadow-md"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Add your button click logic here
+                      setIsEditingTitle(!isEditingTitle);
+                      if (!isEditingTitle) {
+                        setTimeout(() => cardNameRef.current?.focus(), 0);
+                      }
+                    }}
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </div>
                 </div>
                 <div className="rounded-md">
                   <p className="text-base font-normal">{cardName}</p>
@@ -82,18 +96,42 @@ export function Card({
               </Button>
             </DialogTrigger>
           ) : (
-            <input
-              className="m-1 h-9 w-full rounded-sm bg-transparent px-2 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
-              type="text"
-              ref={cardNameRef}
-              value={cardName}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  setIsEditingTitle(false);
-                }
-              }}
-              onChange={handleChange}
-            />
+            <div className="m-1 flex h-fit w-full flex-col items-start justify-start gap-2 rounded-sm p-2">
+              <div className="relative h-32 w-full">
+                <Image src={card.gifUrl} fill alt={"GIF"} />
+                <button
+                  className="absolute right-0 top-0 m-2 rounded-full bg-secondary p-1 shadow-md"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Add your button click logic here
+                    setIsEditingTitle(!isEditingTitle);
+                  }}
+                >
+                  <X className="h-4 w-4 text-white" />
+                </button>
+              </div>
+              <input
+                className="h-9 w-full rounded-sm bg-transparent px-2 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+                type="text"
+                ref={cardNameRef}
+                value={cardName}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setIsEditingTitle(false);
+                  }
+                }}
+                onChange={handleChange}
+              />
+              <div className="flex w-full items-end justify-end">
+                <Avatar className="h-6 w-6">
+                  <AvatarImage
+                    src={card.createdBy.image ?? ""}
+                    alt={card.createdBy.name ?? ""}
+                  />
+                  <AvatarFallback>BB</AvatarFallback>
+                </Avatar>
+              </div>
+            </div>
           )}
 
           <CardDialog card={card} />

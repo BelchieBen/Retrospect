@@ -1,4 +1,4 @@
-import { Text, Tv2, Videotape } from "lucide-react";
+import { Edit2, Text, Tv2, Videotape, X } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
   DialogContent,
@@ -8,7 +8,7 @@ import {
 } from "~/components/ui/dialog";
 import { TextareaAutosize } from "~/components/ui/textarea-autosize";
 import { type Prisma } from "@prisma/client";
-import React, { useRef, useState } from "react";
+import React, { type ChangeEvent, useCallback, useRef, useState } from "react";
 import { Input } from "~/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,6 +28,7 @@ import { Grid } from "@giphy/react-components";
 import giphy from "~/lib/giphy";
 import Image from "next/image";
 import CardComments from "./comments";
+import { debounce } from "lodash";
 
 const FormSchema = z.object({
   description: z.string().optional(),
@@ -41,9 +42,12 @@ export default function CardDialog({
   }>;
 }>) {
   const [editDescription, setEditDescription] = useState(false);
+  const [editTitle, setEditTitle] = useState(false);
+  const [cardTitle, setCardTitle] = useState(card.name ?? "");
   const [giphySearchTerm, setGiphySearchTerm] = useState("");
   const [gifUrl, setGifUrl] = useState(card.gifUrl ?? "");
   const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
+  const cardTitleRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -78,6 +82,23 @@ export default function CardDialog({
     }
   }
 
+  const debouncedSaveCardTitle = useCallback(
+    debounce((name: string) => saveCardName(name), 500),
+    [card.id],
+  );
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setCardTitle(e.target.value);
+    void debouncedSaveCardTitle(e.target.value);
+  };
+
+  const saveCardName = async (name: string) => {
+    setCardTitle(name);
+    await axios.put(`${backendUrl}/cards/${card.id}`, {
+      name,
+    });
+  };
+
   return (
     <DialogContent className="max-h-[90vh] gap-0 overflow-y-auto overflow-x-clip p-0 sm:max-w-[625px]">
       {gifUrl && (
@@ -89,7 +110,40 @@ export default function CardDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Tv2 size={18} />
-            {card.name}
+            <div className="flex w-full items-center justify-between">
+              {editTitle ? (
+                <input
+                  value={cardTitle}
+                  ref={cardTitleRef}
+                  className="w-full bg-transparent focus-visible:outline-none"
+                  onChange={handleChange}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setEditTitle(false);
+                    }
+                  }}
+                />
+              ) : (
+                <p>{cardTitle}</p>
+              )}
+              <button
+                onClick={() => {
+                  setEditTitle(!editTitle);
+                  if (!editTitle) {
+                    setTimeout(() => {
+                      cardTitleRef.current?.focus();
+                    }, 0);
+                  }
+                }}
+                className="text-secondary"
+              >
+                {editTitle ? (
+                  <X size={16} className="text-black dark:text-white" />
+                ) : (
+                  <Edit2 size={16} className="text-black dark:text-white" />
+                )}
+              </button>
+            </div>
           </DialogTitle>
           <DialogDescription>In {card.column?.name}</DialogDescription>
         </DialogHeader>
