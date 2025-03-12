@@ -1,4 +1,4 @@
-import { Edit2, Text, Tv2, Videotape, X } from "lucide-react";
+import { Text, Tv2, Videotape, X } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
   DialogContent,
@@ -42,12 +42,10 @@ export default function CardDialog({
   }>;
 }>) {
   const [editDescription, setEditDescription] = useState(false);
-  const [editTitle, setEditTitle] = useState(false);
-  const [cardTitle, setCardTitle] = useState(card.name ?? "");
+  const [cardName, setCardName] = useState(card.name ?? "");
   const [giphySearchTerm, setGiphySearchTerm] = useState("");
   const [gifUrl, setGifUrl] = useState(card.gifUrl ?? "");
   const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
-  const cardTitleRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -88,12 +86,12 @@ export default function CardDialog({
   );
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setCardTitle(e.target.value);
+    setCardName(e.target.value);
     void debouncedSaveCardTitle(e.target.value);
   };
 
   const saveCardName = async (name: string) => {
-    setCardTitle(name);
+    setCardName(name);
     await axios.put(`${backendUrl}/cards/${card.id}`, {
       name,
     });
@@ -110,39 +108,16 @@ export default function CardDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Tv2 size={18} />
-            <div className="flex w-full items-center justify-between">
-              {editTitle ? (
-                <input
-                  value={cardTitle}
-                  ref={cardTitleRef}
-                  className="w-full bg-transparent focus-visible:outline-none"
-                  onChange={handleChange}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      setEditTitle(false);
-                    }
-                  }}
-                />
-              ) : (
-                <p>{cardTitle}</p>
-              )}
-              <button
-                onClick={() => {
-                  setEditTitle(!editTitle);
-                  if (!editTitle) {
-                    setTimeout(() => {
-                      cardTitleRef.current?.focus();
-                    }, 0);
-                  }
-                }}
-                className="text-secondary"
-              >
-                {editTitle ? (
-                  <X size={16} className="text-black dark:text-white" />
-                ) : (
-                  <Edit2 size={16} className="text-black dark:text-white" />
-                )}
-              </button>
+            <div
+              className={`flex w-full ${card.gifUrl ? "justify-between" : "justify-normal gap-2"} items-center`}
+            >
+              <input
+                value={cardName}
+                type="text"
+                spellCheck
+                className="w-full bg-transparent p-1 focus-visible:border-b-2 focus-visible:border-solid focus-visible:border-primary focus-visible:outline-none"
+                onChange={handleChange}
+              />
             </div>
           </DialogTitle>
           <DialogDescription>In {card.column?.name}</DialogDescription>

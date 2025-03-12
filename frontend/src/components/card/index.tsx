@@ -82,7 +82,9 @@ export function Card({
                   </div>
                 </div>
                 <div className="rounded-md">
-                  <p className="text-base font-normal">{cardName}</p>
+                  <p className="text-wrap text-start text-base font-normal">
+                    {cardName}
+                  </p>
                 </div>
                 <div className="flex w-full items-end justify-end">
                   <Avatar className="h-6 w-6">
