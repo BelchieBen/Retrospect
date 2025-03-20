@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import {
   Popover,
   PopoverContent,
@@ -18,10 +17,11 @@ import {
   FormLabel,
   FormMessage,
 } from "./ui/form";
-import axios from "axios";
+import axios, { type AxiosResponse } from "axios";
 import { backendUrl } from "~/constants/backendUrl";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { type Boards } from "@prisma/client";
 
 function getRandomGradient() {
   const colors = [
@@ -56,10 +56,13 @@ export function CreateBoard() {
   });
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    const response = await axios.post(`${backendUrl}/boards`, {
-      title: data.title,
-      ownerId: session?.user?.id,
-    });
+    const response: AxiosResponse<Boards> = await axios.post(
+      `${backendUrl}/boards`,
+      {
+        title: data.title,
+        ownerId: session?.user?.id,
+      },
+    );
     if (response.status === 200) {
       form.reset();
       router.push(`/boards/${response.data.id}`);

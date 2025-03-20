@@ -1,4 +1,4 @@
-import { Text, Tv2, Videotape, X } from "lucide-react";
+import { Text, Tv2, Videotape } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
   DialogContent,
@@ -11,7 +11,6 @@ import { type Prisma } from "@prisma/client";
 import React, {
   type ChangeEvent,
   useCallback,
-  useEffect,
   useLayoutEffect,
   useRef,
   useState,

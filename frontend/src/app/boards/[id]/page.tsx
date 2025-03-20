@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import BoardColumns from "~/app/_components/board-columns";
-import { Button } from "~/components/ui/button";
 import { getServerAuthSession } from "~/server/auth";
 import { api } from "~/trpc/server";
 
