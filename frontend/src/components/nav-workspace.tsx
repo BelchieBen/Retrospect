@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Command,
-  Folder,
-  MoreHorizontal,
-  Share,
-  Trash2,
-  type LucideIcon,
-} from "lucide-react";
+import { Command, Folder, MoreHorizontal, Share, Trash2 } from "lucide-react";
 
 import {
   DropdownMenu,

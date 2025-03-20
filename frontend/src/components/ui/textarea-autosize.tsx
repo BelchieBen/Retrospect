@@ -25,7 +25,12 @@ const TextareaAutosize = React.forwardRef<
     }
   }, []);
 
-  React.useImperativeHandle(ref, () => innerRef.current);
+  React.useImperativeHandle(ref, () => {
+    if (innerRef.current) {
+      return innerRef.current;
+    }
+    throw new Error("Textarea ref is not assigned");
+  });
 
   return (
     <textarea

@@ -3,19 +3,11 @@
 import * as React from "react";
 import {
   BookMarked,
-  BookOpen,
-  Bot,
   Command,
-  Frame,
   LifeBuoy,
-  Map,
-  PieChart,
   Plus,
   Send,
   Settings2,
-  Snowflake,
-  SquareTerminal,
-  User,
   Users,
 } from "lucide-react";
 
@@ -49,34 +41,34 @@ const data = {
     },
     {
       title: "Members",
-      url: "#",
+      url: "/",
       icon: Users,
       action: {
         icon: Plus,
-        url: "#",
+        url: "/",
       },
     },
 
     {
       title: "Workspace Settings",
-      url: "#",
+      url: "/",
       icon: Settings2,
       items: [
         {
           title: "General",
-          url: "#",
+          url: "/",
         },
         {
           title: "Team",
-          url: "#",
+          url: "/",
         },
         {
           title: "Billing",
-          url: "#",
+          url: "/",
         },
         {
           title: "Limits",
-          url: "#",
+          url: "/",
         },
       ],
     },
@@ -84,12 +76,12 @@ const data = {
   navSecondary: [
     {
       title: "Support",
-      url: "#",
+      url: "/",
       icon: LifeBuoy,
     },
     {
       title: "Feedback",
-      url: "#",
+      url: "/",
       icon: Send,
     },
   ],
@@ -106,7 +98,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
+              <a href="/">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <Command className="size-4" />
                 </div>
