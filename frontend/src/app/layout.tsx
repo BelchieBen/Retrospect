@@ -10,6 +10,7 @@ import { ThemeProvider } from "./theme-provider";
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
 import { SiteHeader } from "~/components/site-header";
 import { AppSidebar } from "~/components/app-sidebar";
+import { Toaster } from "~/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Retrospect",
@@ -52,6 +53,7 @@ export default async function RootLayout({
                   {children}
                 </div>
               )}
+              <Toaster />
             </Providers>
           </ThemeProvider>
         </TRPCReactProvider>

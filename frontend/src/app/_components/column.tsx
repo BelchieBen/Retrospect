@@ -10,22 +10,28 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { backendUrl } from "~/constants/backendUrl";
 import debounce from "lodash/debounce";
 import { useSession } from "next-auth/react";
+import { Card } from "~/components/card";
 
 export default function BoardColumn({
   column,
 }: Readonly<{
-  column: Prisma.ColumnGetPayload<{ include: { cards: true } }>;
+  column: Prisma.ColumnGetPayload<{
+    include: {
+      cards: {
+        include: {
+          comments: { include: { createdBy: true } };
+          createdBy: true;
+          column: true;
+        };
+      };
+    };
+  }>;
 }>) {
   const [columnName, setColumnName] = useState(column.name ?? "");
   const { data: session } = useSession();
@@ -64,7 +70,7 @@ export default function BoardColumn({
   };
 
   return (
-    <div className="flex h-fit max-h-svh w-72 flex-col rounded-md bg-sidebar">
+    <div className="flex h-fit w-72 flex-col rounded-md bg-sidebar">
       <div className="flex justify-between">
         <input
           className="m-1 h-9 w-full rounded-sm bg-transparent px-2 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
@@ -87,6 +93,7 @@ export default function BoardColumn({
               <DropdownMenuItem onClick={addCard}>Add card</DropdownMenuItem>
               <DropdownMenuItem>Copy column</DropdownMenuItem>
               <DropdownMenuItem>Move column</DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem>Move all cards in column</DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuGroup>
@@ -96,7 +103,7 @@ export default function BoardColumn({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              className="bg-danger focus:bg-red-500"
+              className="cursor-pointer bg-danger focus:bg-red-500"
               onClick={deleteColumn}
             >
               Delete column
@@ -107,9 +114,7 @@ export default function BoardColumn({
 
       <div className="flex flex-col gap-4 p-2">
         {column.cards.map((card) => (
-          <div key={card.id} className="h-9 w-full rounded-sm bg-primary">
-            {card.name}
-          </div>
+          <Card key={card.id} card={card} />
         ))}
       </div>
       <div className="flex p-1">

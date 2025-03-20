@@ -34,7 +34,16 @@ router.get("/:boardId", async (req, res) => {
     where: {
       boardId: boardId,
     },
-    include: { cards: true },
+    include: {
+      cards: {
+        include: {
+          comments: { include: { createdBy: true } },
+          createdBy: true,
+          column: true,
+        },
+        orderBy: { createdAt: "asc" },
+      },
+    },
     orderBy: { position: "asc" },
   });
   res.json(columns);

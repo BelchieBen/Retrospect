@@ -18,9 +18,19 @@ export default function BoardColumns({
 }>) {
   const { socket } = useWebSocket();
 
-  const { data, refetch } = useQuery("columns", async () => {
+  const { data: columns, refetch } = useQuery("columns", async () => {
     const response: AxiosResponse<
-      Prisma.ColumnGetPayload<{ include: { cards: true } }>[]
+      Prisma.ColumnGetPayload<{
+        include: {
+          cards: {
+            include: {
+              comments: { include: { createdBy: true } };
+              createdBy: true;
+              column: true;
+            };
+          };
+        };
+      }>[]
     > = await axios.get(`${backendUrl}/columns/${initialBoard.id}`);
 
     return response.data;
@@ -29,24 +39,24 @@ export default function BoardColumns({
   useEffect(() => {
     if (socket) {
       socket.on("column_updated", async () => {
-        console.log("column_updated");
         await refetch();
       });
     }
   }, [socket]);
 
   const addColumn = async () => {
-    if (!initialBoard || !data) return;
-    console.log("DATA LEN", data.length);
+    if (!initialBoard || !columns) return;
     await axios.post(`${backendUrl}/columns`, {
       boardId: initialBoard.id,
-      position: data.length + 1,
+      position: columns.length + 1,
     });
   };
   return (
     <div className="flex flex-col gap-4">
       <div className={`flex gap-4`}>
-        {data?.map((column) => <BoardColumn key={column.id} column={column} />)}
+        {columns?.map((column) => (
+          <BoardColumn key={column.id} column={column} />
+        ))}
         <Button variant={"outline"} onClick={addColumn} className="w-fit">
           <Plus />
         </Button>
