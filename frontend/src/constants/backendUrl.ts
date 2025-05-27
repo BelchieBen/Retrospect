@@ -1,1 +1,3 @@
-export const backendUrl = "http://localhost:8000";
+import { env } from "~/env";
+
+export const backendUrl = env.NEXT_PUBLIC_SOCKET_URL;

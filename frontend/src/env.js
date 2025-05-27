@@ -16,7 +16,7 @@ export const env = createEnv({
     AZURE_AD_CLIENT_ID: z.string(),
     AZURE_AD_CLIENT_SECRET: z.string(),
     AZURE_AD_TENANT_ID: z.string(),
-    DATABASE_URL: z.string().url(),
+    DATABASE_URL: z.string(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
