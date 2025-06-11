@@ -12,6 +12,9 @@ ARG GITHUB_TOKEN
 RUN echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> ~/.npmrc && \
     echo "@BelchieBen:registry=https://npm.pkg.github.com/" >> ~/.npmrc
 
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
+
 # Install dependencies
 RUN npm install && \
     rm ~/.npmrc
