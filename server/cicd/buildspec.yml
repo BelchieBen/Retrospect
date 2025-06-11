@@ -12,12 +12,10 @@ phases:
       - echo Fetching DATABASE_URL from AWS SSM Parameter Store...
       - DATABASE_URL=$(aws ssm get-parameter --name "/retrospect/prod/DATABASE_URL" --with-decryption --region eu-west-3 --query "Parameter.Value" --output text)
       - GITHUB_PACKAGE_TOKEN=$(aws ssm get-parameter --name "/retrospect/prod/GITHUB_PACKAGE_TOKEN" --with-decryption --region eu-west-3 --query "Parameter.Value" --output text)
-      - echo @BelchieBen:registry=https://npm.pkg.github.com/ >> .npmrc
-      - echo "//npm.pkg.github.com/:_authToken=$GITHUB_PACKAGE_TOKEN" >> .npmrc
   build:
     commands:
       - echo Building the Docker image...
-      - docker build --build-arg DATABASE_URL="$DATABASE_URL" -t $REPOSITORY_URI:$IMAGE_TAG .
+      - docker build --build-arg GITHUB_TOKEN="$GITHUB_PACKAGE_TOKEN" --build-arg DATABASE_URL="$DATABASE_URL" -t $REPOSITORY_URI:$IMAGE_TAG .
   post_build:
     commands:
       - echo Pushing the Docker image...
