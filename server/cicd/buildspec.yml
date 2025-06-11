@@ -13,6 +13,7 @@ phases:
   build:
     commands:
       - echo Building the Docker image...
+      - cd server
       - docker build --build-arg DATABASE_URL="$DATABASE_URL" -t $REPOSITORY_URI:$IMAGE_TAG .
   post_build:
     commands:
