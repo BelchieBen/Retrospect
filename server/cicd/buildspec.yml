@@ -1,0 +1,26 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - $(aws ecr get-login-password --region eu-west-3 | docker login --username AWS --password-stdin 412899877507.dkr.ecr.eu-west-3.amazonaws.com)
+      - REPOSITORY_URI=412899877507.dkr.ecr.eu-west-3.amazonaws.com/retrospect_server
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - echo Fetching DATABASE_URL from AWS SSM Parameter Store...
+      - DATABASE_URL=$(aws ssm get-parameter --name "/retrospect/prod/DATABASE_URL" --with-decryption --region eu-west-3 --query "Parameter.Value" --output text)
+  build:
+    commands:
+      - echo Building the Docker image...
+      - docker build --build-arg DATABASE_URL="$DATABASE_URL" -t $REPOSITORY_URI:$IMAGE_TAG .
+  post_build:
+    commands:
+      - echo Pushing the Docker image...
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo Writing image definitions file...
+      - printf '[{"name":"retrospect_server","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+
+artifacts:
+  files:
+    - imagedefinitions.json
