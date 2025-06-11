@@ -5,16 +5,24 @@ phases:
     commands:
       - echo Preparing to deploy to ECS...
       - cd server
+      - IMAGE_URI=$(cat imagedefinitions.json | jq -r '.[0].imageUri')
+      - echo "Image URI is $IMAGE_URI"
   build:
     commands:
-      - echo Deploying to ECS...
+      - echo Registering new ECS task definition...
+      - |
+        TASK_DEF=$(aws ecs describe-task-definition --task-definition retrospect-server --region eu-west-3)
+        NEW_TASK_DEF=$(echo $TASK_DEF | jq --arg IMAGE "$IMAGE_URI" '.taskDefinition | .containerDefinitions[0].image=$IMAGE | {family, containerDefinitions, executionRoleArn, taskRoleArn, networkMode, requiresCompatibilities, cpu, memory}')
+        echo $NEW_TASK_DEF > new-task-def.json
+        REVISION=$(aws ecs register-task-definition --cli-input-json file://new-task-def.json --region eu-west-3 | jq -r '.taskDefinition.taskDefinitionArn')
+      - echo Updating ECS service...
       - |
         aws ecs update-service \
           --cluster retrospect-server \
           --service retrospect-server \
-          --force-new-deployment \
+          --task-definition $REVISION \
           --region eu-west-3 \
-          --cli-input-json file://imagedefinitions.json
+          --force-new-deployment
   post_build:
     commands:
       - echo Deployment complete.
