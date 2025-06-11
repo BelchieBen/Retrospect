@@ -1,0 +1,19 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Preparing to deploy to ECS...
+  build:
+    commands:
+      - echo Deploying to ECS...
+      - |
+        aws ecs update-service \
+          --cluster retrospect-server \
+          --service retrospect-server \
+          --force-new-deployment \
+          --region eu-west-3 \
+          --cli-input-json file://imagedefinitions.json
+  post_build:
+    commands:
+      - echo Deployment complete.
