@@ -4,6 +4,7 @@ phases:
   pre_build:
     commands:
       - echo Preparing to deploy to ECS...
+      - cd server
   build:
     commands:
       - echo Deploying to ECS...
