@@ -1,12 +1,9 @@
 {
-  "taskDefinitionArn": "arn:aws:ecs:eu-west-3:412899877507:task-definition/retrospect-server:1",
+  "taskDefinitionArn": "arn:aws:ecs:eu-west-3:412899877507:task-definition/retrospect-server:4",
   "containerDefinitions": [
     {
       "name": "retrospect-server",
-      "image": "benjaminbelcher/retrospect-server:0.0.1",
-      "repositoryCredentials": {
-        "credentialsParameter": "arn:aws:secretsmanager:eu-west-3:412899877507:secret:Retrospect_Dockerhub_Token-rQPg6u"
-      },
+      "image": "412899877507.dkr.ecr.eu-west-3.amazonaws.com/retrospect_server:506b5c2",
       "cpu": 0,
       "portMappings": [
         {
@@ -41,7 +38,7 @@
   "family": "retrospect-server",
   "executionRoleArn": "arn:aws:iam::412899877507:role/ecsTaskExecutionRole",
   "networkMode": "awsvpc",
-  "revision": 1,
+  "revision": 4,
   "volumes": [],
   "status": "ACTIVE",
   "requiresAttributes": [
@@ -52,13 +49,16 @@
       "name": "ecs.capability.execution-role-awslogs"
     },
     {
+      "name": "com.amazonaws.ecs.capability.ecr-auth"
+    },
+    {
       "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
     },
     {
       "name": "com.amazonaws.ecs.capability.docker-remote-api.1.28"
     },
     {
-      "name": "ecs.capability.private-registry-authentication.secretsmanager"
+      "name": "ecs.capability.execution-role-ecr-pull"
     },
     {
       "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
@@ -75,12 +75,7 @@
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "1024",
   "memory": "3072",
-  "runtimePlatform": {
-    "cpuArchitecture": "X86_64",
-    "operatingSystemFamily": "LINUX"
-  },
-  "registeredAt": "2025-06-09T12:40:33.949Z",
-  "registeredBy": "arn:aws:sts::412899877507:assumed-role/AWSReservedSSO_PowerUserAccess_df754c6cced72508/Benjamin.Belcher@ideagenplc.com",
-  "enableFaultInjection": false,
+  "registeredAt": "2025-06-11T11:44:07.190Z",
+  "registeredBy": "arn:aws:sts::412899877507:assumed-role/codebuild-retrospect_server_prod_deploy-service-role/AWSCodeBuild-fa13e525-460d-4caf-908e-2615483153ef",
   "tags": []
 }
