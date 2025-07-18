@@ -1,6 +1,5 @@
 import "~/styles/globals.css";
 
-import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "~/trpc/react";
@@ -24,11 +23,7 @@ export default async function RootLayout({
   const session = await getServerAuthSession();
 
   return (
-    <html
-      lang="en"
-      className={`${GeistSans.variable}`}
-      suppressHydrationWarning
-    >
+    <html lang="en" className="font-sans" suppressHydrationWarning>
       <body>
         <TRPCReactProvider>
           <ThemeProvider
@@ -49,7 +44,7 @@ export default async function RootLayout({
                   </SidebarProvider>
                 </div>
               ) : (
-                <div className="flex items-center justify-center">
+                <div className="justify-cente flex items-center">
                   {children}
                 </div>
               )}

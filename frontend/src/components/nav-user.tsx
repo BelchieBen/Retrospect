@@ -29,15 +29,7 @@ import {
 import { Button } from "./ui/button";
 import Link from "next/link";
 
-export function NavUser({
-  user,
-}: Readonly<{
-  user: {
-    name: string;
-    email: string;
-    avatar: string;
-  };
-}>) {
+export function NavUser() {
   const { isMobile } = useSidebar();
   const { data: session } = useSession();
 
@@ -49,24 +41,26 @@ export function NavUser({
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                className="px-3 py-2 hover:bg-neutral10 data-[state=open]:bg-neutral10 dark:hover:bg-neutral30 dark:data-[state=open]:bg-neutral30"
               >
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage
                     src={session?.user.image ?? ""}
-                    alt={user.name}
+                    alt={session?.user.name ?? ""}
                   />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg bg-teal70 text-white dark:bg-teal60">
+                    {session?.user.name?.[0] ?? "U"}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">
+                  <span className="truncate font-semibold text-black dark:text-white">
                     {session?.user.name}
                   </span>
-                  <span className="truncate text-xs">
+                  <span className="truncate text-xs text-neutral60 dark:text-neutral50">
                     {session?.user.email}
                   </span>
                 </div>
-                <ChevronsUpDown className="ml-auto size-4" />
+                <ChevronsUpDown className="ml-auto size-4 text-neutral60 dark:text-neutral40" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -80,7 +74,7 @@ export function NavUser({
                   <Avatar className="h-8 w-8 rounded-lg">
                     <AvatarImage
                       src={session?.user.image ?? ""}
-                      alt={user.name}
+                      alt={session?.user.name ?? ""}
                     />
                     <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                   </Avatar>

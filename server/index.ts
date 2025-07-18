@@ -29,6 +29,9 @@ const columnsChannel = columnsNotifier.channel("columns");
 const boardMembersNotifier = new PostgresNotifier(process.env.DATABASE_URL!);
 const boardMembersChannel = boardMembersNotifier.channel("board_members");
 
+const boardNotifier = new PostgresNotifier(process.env.DATABASE_URL!);
+const boardChannel = boardNotifier.channel("boards");
+
 const cardsNotifier = new PostgresNotifier(process.env.DATABASE_URL!);
 const cardsChannel = cardsNotifier.channel("cards");
 
@@ -40,6 +43,7 @@ io.on("connection", (socket) => {
   socket.join("columns");
   socket.join("cards");
   socket.join("comments");
+  socket.join("boards");
   console.log("a user connected");
 
   socket.on("disconnect", () => {
@@ -61,6 +65,16 @@ cardsChannel.subscribe((payload) => {
 
 commentsChannel.subscribe((payload) => {
   io.to("comments").emit("comment_updated", payload);
+});
+
+boardChannel.subscribe((payload) => {
+  console.log("Board channel payload:", payload);
+  const data = JSON.parse(payload ?? "{}");
+  if (data?.action === "join") {
+    io.to("boards").emit("user_joined", { userId: data.userId });
+  } else {
+    io.to("boards").emit("board_updated", payload);
+  }
 });
 
 server.listen(port, () => {

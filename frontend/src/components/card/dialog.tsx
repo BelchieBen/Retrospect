@@ -1,10 +1,19 @@
-import { Text, Tv2, Videotape } from "lucide-react";
+import {
+  Text,
+  Tv2,
+  Videotape,
+  Trash2,
+  Archive,
+  ArchiveRestore,
+} from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
+  Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "~/components/ui/dialog";
 import { TextareaAutosize } from "~/components/ui/textarea-autosize";
 import { type Prisma } from "@prisma/client";
@@ -12,9 +21,11 @@ import React, {
   type ChangeEvent,
   useCallback,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
+import { useMutation } from "react-query";
 import { Input } from "~/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -51,8 +62,42 @@ export default function CardDialog({
   const [cardName, setCardName] = useState(card.name ?? "");
   const [giphySearchTerm, setGiphySearchTerm] = useState("");
   const [gifUrl, setGifUrl] = useState(card.gifUrl ?? "");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
   const cardNameRef = useRef<HTMLTextAreaElement>(null);
+
+  const deleteCardMutation = useMutation({
+    mutationFn: async () => {
+      await axios.delete(`${backendUrl}/cards/${card.id}`);
+    },
+    onSuccess: () => {
+      setShowDeleteDialog(false);
+      // Close the main dialog by triggering a click on the close button or parent handler
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    },
+    onError: (error) => {
+      console.error("Failed to delete card:", error);
+    },
+  });
+
+  const archiveCardMutation = useMutation({
+    mutationFn: async (archived: boolean) => {
+      await axios.patch(`${backendUrl}/cards/${card.id}/archive`, { archived });
+    },
+    onSuccess: () => {
+      toast.success(
+        card.archived
+          ? "Card unarchived successfully"
+          : "Card archived successfully",
+      );
+      // Close the main dialog
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    },
+    onError: (error) => {
+      console.error("Failed to archive/unarchive card:", error);
+      toast.error("Failed to archive/unarchive card");
+    },
+  });
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -87,9 +132,19 @@ export default function CardDialog({
     }
   }
 
-  const debouncedSaveCardTitle = useCallback(
-    debounce((name: string) => saveCardName(name), 500),
+  const saveCardName = useCallback(
+    async (name: string) => {
+      setCardName(name);
+      await axios.put(`${backendUrl}/cards/${card.id}`, {
+        name,
+      });
+    },
     [card.id],
+  );
+
+  const debouncedSaveCardTitle = useMemo(
+    () => debounce(saveCardName, 500),
+    [saveCardName],
   );
 
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -98,16 +153,17 @@ export default function CardDialog({
     void debouncedSaveCardTitle(e.target.value);
   };
 
+  const deleteCard = () => {
+    deleteCardMutation.mutate();
+  };
+
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true);
+  };
+
   const resizeTextArea = (textArea: HTMLTextAreaElement) => {
     textArea.style.height = "auto";
     textArea.style.height = `${textArea.scrollHeight}px`;
-  };
-
-  const saveCardName = async (name: string) => {
-    setCardName(name);
-    await axios.put(`${backendUrl}/cards/${card.id}`, {
-      name,
-    });
   };
 
   useLayoutEffect(() => {
@@ -144,6 +200,42 @@ export default function CardDialog({
           <DialogDescription>In {card.column?.name}</DialogDescription>
         </DialogHeader>
         <div className="flex w-full flex-col gap-4">
+          {/* Actions section */}
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => archiveCardMutation.mutate(!card.archived)}
+              disabled={archiveCardMutation.isLoading}
+              className={
+                card.archived
+                  ? "text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                  : "text-orange-600 hover:bg-orange-50 hover:text-orange-700"
+              }
+            >
+              {card.archived ? (
+                <>
+                  <ArchiveRestore className="mr-2 h-4 w-4" />
+                  Restore Card
+                </>
+              ) : (
+                <>
+                  <Archive className="mr-2 h-4 w-4" />
+                  Archive Card
+                </>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDeleteClick}
+              className="text-red-600 hover:bg-red-50 hover:text-red-700"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Card
+            </Button>
+          </div>
+
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <Text size={20} />
@@ -260,6 +352,35 @@ export default function CardDialog({
           <CardComments card={card} />
         </div>
       </div>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Card</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete &quot;{cardName || "this card"}
+              &quot;? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={deleteCardMutation.isLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={deleteCard}
+              disabled={deleteCardMutation.isLoading}
+            >
+              {deleteCardMutation.isLoading ? "Deleting..." : "Delete Card"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DialogContent>
   );
 }

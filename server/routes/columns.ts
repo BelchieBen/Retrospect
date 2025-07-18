@@ -30,18 +30,21 @@ router.post("/", async (req, res) => {
 
 router.get("/:boardId", async (req, res) => {
   const { boardId } = req.params;
+  const { includeArchived } = req.query as { includeArchived?: string };
+
   const columns = await db.column.findMany({
     where: {
       boardId: boardId,
     },
     include: {
       cards: {
+        where: includeArchived === "true" ? {} : { archived: false },
         include: {
           comments: { include: { createdBy: true } },
           createdBy: true,
           column: true,
         },
-        orderBy: { createdAt: "asc" },
+        orderBy: { position: "asc" },
       },
     },
     orderBy: { position: "asc" },

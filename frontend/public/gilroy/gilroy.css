@@ -1,0 +1,26 @@
+@font-face {
+  font-family: 'gilroy';
+  src: url('@ideagen/helix-plus-ui-lib/gilroy-regular-otf') format('opentype');
+  src: url('@ideagen/helix-plus-ui-lib/gilroy-regular-otf') format('opentype'), url('@ideagen/helix-plus-ui-lib/gilroy-regular-woff') format('woff'),
+    url('@ideagen/helix-plus-ui-lib/gilroy-regular-woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'gilroy';
+  src: url('@ideagen/helix-plus-ui-lib/gilroy-medium-otf') format('opentype');
+  src: url('@ideagen/helix-plus-ui-lib/gilroy-medium-otf') format('opentype'), url('@ideagen/helix-plus-ui-lib/gilroy-medium-woff') format('woff'),
+    url('@ideagen/helix-plus-ui-lib/gilroy-medium-woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'gilroy';
+  src: url('@ideagen/helix-plus-ui-lib/gilroy-bold-otf') format('opentype');
+  src: url('@ideagen/helix-plus-ui-lib/gilroy-bold-otf') format('opentype'), url('@ideagen/helix-plus-ui-lib/gilroy-bold-woff') format('woff'),
+    url('@ideagen/helix-plus-ui-lib/gilroy-bold-woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+}

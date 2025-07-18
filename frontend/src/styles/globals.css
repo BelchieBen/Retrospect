@@ -1,29 +1,64 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom Gilroy Font */
+@font-face {
+  font-family: "Gilroy";
+  src:
+    url("/gilroy/gilroy-regular.woff2") format("woff2"),
+    url("/gilroy/gilroy-regular.woff") format("woff"),
+    url("/gilroy/gilroy-regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gilroy";
+  src:
+    url("/gilroy/gilroy-medium.woff2") format("woff2"),
+    url("/gilroy/gilroy-medium.woff") format("woff"),
+    url("/gilroy/gilroy-medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gilroy";
+  src:
+    url("/gilroy/gilroy-bold.woff2") format("woff2"),
+    url("/gilroy/gilroy-bold.woff") format("woff"),
+    url("/gilroy/gilroy-bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: #056d78;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --warning: #ffe066;
-    --danger: #e22d38;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
+    --background: var(--white);
+    --foreground: var(--black);
+    --card: var(--white);
+    --card-foreground: var(--black);
+    --popover: var(--white);
+    --popover-foreground: var(--black);
+    --primary: var(--teal90);
+    --primary-foreground: var(--white);
+    --secondary: var(--neutral05);
+    --secondary-foreground: var(--black);
+    --muted: var(--neutral05);
+    --muted-foreground: var(--neutral60);
+    --accent: var(--neutral05);
+    --accent-foreground: var(--black);
+    --destructive: var(--red60);
+    --destructive-foreground: var(--white);
+    --warning: var(--yellow30);
+    --danger: var(--red50);
+    --border: var(--neutral20);
+    --input: var(--neutral20);
+    --ring: var(--neutral100);
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
@@ -133,81 +168,125 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: #22a3af;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --warning: #ebc64d;
-    --danger: #e22d38;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+    --background: #1f2937;
+    --foreground: var(--white);
+    --card: var(--neutral10);
+    --card-foreground: var(--white);
+    --popover: var(--neutral10);
+    --popover-foreground: var(--white);
+    --primary: var(--teal70);
+    --primary-foreground: var(--black);
+    --secondary: var(--neutral20);
+    --secondary-foreground: var(--white);
+    --muted: var(--neutral20);
+    --muted-foreground: var(--neutral60);
+    --accent: var(--neutral20);
+    --accent-foreground: var(--white);
+    --destructive: var(--red60);
+    --destructive-foreground: var(--white);
+    --warning: var(--yellow60);
+    --danger: var(--red50);
+    --border: var(--neutral30);
+    --input: var(--neutral30);
+    --ring: var(--neutral80);
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    /* Helix Pallete */
+    /* Helix Palette - Dark Mode */
     --black: #000000;
     --white: #ffffff;
-    --neutral05: #f4f5f6;
-    --neutral10: #dde0e3;
-    --neutral20: #c8cdd1;
-    --neutral30: #b6bbc1;
-    --neutral40: #9ea6ad;
-    --neutral50: #8b939a;
-    --neutral60: #6e7881;
-    --neutral70: #5d6977;
-    --teal05: #e4fcff;
-    --teal10: #d2f6fa;
-    --teal20: #c1f0f5;
-    --teal30: #98e5ec;
-    --teal40: #76d7e0;
-    --teal50: #5cc7d0;
+    --neutral05: #121e29;
+    --neutral10: #1a2832;
+    --neutral20: #24333e;
+    --neutral30: #2f4051;
+    --neutral40: #3d4f5e;
+    --neutral50: #4c5b6b;
+    --neutral60: #5d6977;
+    --neutral70: #6e7881;
+    --neutral80: #8b939a;
+    --neutral90: #9ea6ad;
+    --neutral100: #b6bbc1;
+    --neutral110: #c8cdd1;
+    --neutral120: #dde0e3;
+    --teal05: #0c161f;
+    --teal10: #14242d;
+    --teal20: #1a3138;
+    --teal30: #1e3f46;
+    --teal40: #234a52;
+    --teal50: #2a555d;
     --teal60: #3bb7c2;
-    --teal70: #22a3af;
-    --pink05: #ffe4f1;
-    --pink10: #ffc7e3;
-    --pink20: #ffaad5;
-    --pink30: #ff73b8;
-    --yellow05: #fffae4;
-    --yellow10: #fff4c3;
-    --yellow20: #ffefa1;
-    --yellow30: #ffe066;
-    --yellow40: #f5ca3f;
-    --green05: #e4fff4;
-    --green10: #c5fde7;
-    --green20: #a7fbd9;
-    --green30: #71f5c0;
-    --green40: #42eca8;
-    --green50: #1edf92;
-    --blue05: #e4eaff;
-    --blue10: #cfd8ff;
-    --blue20: #b9c7ff;
-    --blue30: #8aa0fe;
-    --red05: #ffe4e6;
-    --red10: #fec9cc;
-    --red20: #fcaeb3;
-    --red30: #f77b83;
-    --red40: #fa5b62;
-    --orange05: #fce1d0;
-    --orange10: #ffd0aa;
-    --orange20: #ffb76d;
-    --orange30: #ffa433;
-    --orange40: #ff9800;
-    --orange50: #ef8100;
+    --teal70: #5cc7d0;
+    --teal80: #76d7e0;
+    --teal90: #98e5ec;
+    --teal100: #c1f0f5;
+    --pink05: #1f0a16;
+    --pink10: #2a1120;
+    --pink20: #35182a;
+    --pink30: #421f34;
+    --pink40: #5c2247;
+    --pink50: #7a2a5a;
+    --pink60: #a60052;
+    --pink70: #c80063;
+    --pink80: #e30072;
+    --pink90: #fc4ca8;
+    --pink100: #ff73b8;
+    --yellow05: #1a1607;
+    --yellow10: #241e0a;
+    --yellow20: #2e260d;
+    --yellow30: #3a3011;
+    --yellow40: #4a3e16;
+    --yellow50: #5c4e1c;
+    --yellow60: #d5920f;
+    --yellow70: #e7af22;
+    --yellow80: #f5ca3f;
+    --yellow90: #ffe066;
+    --yellow100: #fff4c3;
+    --green05: #0a1f15;
+    --green10: #0f2a1c;
+    --green20: #143523;
+    --green30: #1a422b;
+    --green40: #215235;
+    --green50: #2a6341;
+    --green60: #04ce7d;
+    --green70: #1edf92;
+    --green80: #42eca8;
+    --green90: #71f5c0;
+    --green100: #a7fbd9;
+    --blue05: #0a1224;
+    --blue10: #0f1a31;
+    --blue20: #14233e;
+    --blue30: #1a2d4d;
+    --blue40: #21395f;
+    --blue50: #2a4674;
+    --blue60: #2647da;
+    --blue70: #4261ee;
+    --blue80: #708bf8;
+    --blue90: #8aa0fe;
+    --blue100: #b9c7ff;
+    --red05: #1f0809;
+    --red10: #2a0c0e;
+    --red20: #351013;
+    --red30: #421419;
+    --red40: #521a20;
+    --red50: #652128;
+    --red60: #d11723;
+    --red70: #e22d38;
+    --red80: #fa5b62;
+    --red90: #f77b83;
+    --red100: #fcaeb3;
+    --orange05: #1f1006;
+    --orange10: #2a160a;
+    --orange20: #351d0e;
+    --orange30: #422413;
+    --orange40: #522e19;
+    --orange50: #653a20;
+    --orange60: #dc6a00;
+    --orange70: #ff9800;
+    --orange80: #ffa433;
+    --orange90: #ffb76d;
+    --orange100: #ffd0aa;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -231,6 +310,11 @@
   /* Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Set default font */
+  body {
+    font-family: "Gilroy", sans-serif;
   }
 
   .no-scrollbar {
