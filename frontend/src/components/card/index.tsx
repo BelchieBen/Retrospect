@@ -13,7 +13,7 @@ import axios from "axios";
 import { debounce } from "lodash";
 import { Button } from "~/components/ui/button";
 import { Dialog, DialogTrigger } from "~/components/ui/dialog";
-import { Edit2, X } from "lucide-react";
+import { Edit2, X, Archive } from "lucide-react";
 import CardDialog from "./dialog";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -66,15 +66,20 @@ export function Card({
   if (card.gifUrl)
     return (
       <Dialog>
-        <div className="flex flex-col">
+        <div className={`flex flex-col ${card.archived ? "opacity-60" : ""}`}>
           {!isEditingTitle ? (
             <DialogTrigger asChild>
               <Button
                 variant="ghost"
-                className="m-1 flex h-fit w-full flex-col items-start justify-start rounded-sm bg-transparent px-2 hover:bg-secondary"
+                className={`m-1 flex h-fit w-full flex-col items-start justify-start rounded-sm bg-transparent px-2 hover:bg-secondary ${card.archived ? "border-2 border-dashed border-gray-400" : ""}`}
               >
                 <div className="relative h-32 w-full">
                   <Image src={card.gifUrl} fill alt={"GIF"} />
+                  {card.archived && (
+                    <div className="absolute left-0 top-0 m-2 rounded-full bg-gray-600 p-1 shadow-md">
+                      <Archive className="h-3 w-3 text-white" />
+                    </div>
+                  )}
                   <div
                     role="button"
                     className="absolute right-0 top-0 m-2 rounded-full bg-secondary p-1 shadow-md"
@@ -160,15 +165,18 @@ export function Card({
     );
 
   return (
-    <div className="flex h-11 items-center justify-between">
+    <div
+      className={`flex h-11 items-center justify-between ${card.archived ? "opacity-60" : ""}`}
+    >
       <Dialog>
         {!isEditingTitle ? (
           <DialogTrigger asChild>
             <Button
               variant="ghost"
-              className="m-1 flex h-9 w-full items-center justify-start rounded-sm bg-transparent px-2 hover:bg-secondary"
+              className={`m-1 flex h-9 w-full items-center justify-start rounded-sm bg-transparent px-2 hover:bg-secondary ${card.archived ? "border-2 border-dashed border-gray-400" : ""}`}
             >
-              <div className="rounded-md">
+              <div className="flex items-center gap-2 rounded-md">
+                {card.archived && <Archive className="h-4 w-4 text-gray-500" />}
                 <p className="text-base font-normal">{cardName}</p>
               </div>
             </Button>

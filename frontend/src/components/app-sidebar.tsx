@@ -1,15 +1,5 @@
-"use client";
-
 import * as React from "react";
-import {
-  BookMarked,
-  Command,
-  LifeBuoy,
-  Plus,
-  Send,
-  Settings2,
-  Users,
-} from "lucide-react";
+import { Command } from "lucide-react";
 
 import { NavMain } from "~/components/nav-main";
 import { NavProjects } from "~/components/nav-workspace";
@@ -24,100 +14,49 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar";
-import { api } from "~/trpc/react";
+import { api } from "~/trpc/server";
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: [
-    {
-      title: "Boards",
-      url: "/boards",
-      icon: BookMarked,
-      isActive: true,
-    },
-    {
-      title: "Members",
-      url: "/",
-      icon: Users,
-      action: {
-        icon: Plus,
-        url: "/",
-      },
-    },
-
-    {
-      title: "Workspace Settings",
-      url: "/",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "/",
-        },
-        {
-          title: "Team",
-          url: "/",
-        },
-        {
-          title: "Billing",
-          url: "/",
-        },
-        {
-          title: "Limits",
-          url: "/",
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Support",
-      url: "/",
-      icon: LifeBuoy,
-    },
-    {
-      title: "Feedback",
-      url: "/",
-      icon: Send,
-    },
-  ],
-};
-
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { data: boards } = api.board.getBoards.useQuery();
+export async function AppSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
+  const boards = await api.board.getBoards();
   return (
     <Sidebar
-      className="top-[--header-height] !h-[calc(100svh-var(--header-height))]"
+      className="top-[--header-height] !h-[calc(100svh-var(--header-height))] border-r border-neutral20 bg-white dark:border-neutral70 dark:bg-neutral10"
       {...props}
     >
-      <SidebarHeader className="border-b">
+      <SidebarHeader className="border-b border-neutral20 bg-neutral05 px-4 py-3 dark:border-neutral70 dark:bg-neutral20">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <a href="/">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+            <SidebarMenuButton
+              size="lg"
+              asChild
+              className="hover:bg-neutral10 dark:hover:bg-neutral30"
+            >
+              <a href="/" className="flex items-center gap-3">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-teal70 text-white dark:bg-teal60">
                   <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Spartan</span>
-                  <span className="truncate text-xs">Development</span>
+                  <span className="truncate font-semibold text-black dark:text-white">
+                    Spartan
+                  </span>
+                  <span className="truncate text-xs text-neutral60 dark:text-neutral50">
+                    Development
+                  </span>
                 </div>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={data.navMain} />
+      <SidebarContent className="bg-white px-2 py-4 dark:bg-neutral10">
+        <NavMain />
         <NavProjects boards={boards?.BoardMembers} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavSecondary className="mt-auto" />
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
+      <SidebarFooter className="border-t border-neutral20 bg-neutral05 p-2 dark:border-neutral70 dark:bg-neutral20">
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );

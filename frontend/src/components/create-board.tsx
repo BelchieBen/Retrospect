@@ -5,10 +5,12 @@ import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -17,11 +19,13 @@ import {
   FormLabel,
   FormMessage,
 } from "./ui/form";
+import { X } from "lucide-react";
 import axios, { type AxiosResponse } from "axios";
 import { backendUrl } from "~/constants/backendUrl";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { type Boards } from "@prisma/client";
+import { useState } from "react";
 
 function getRandomGradient() {
   const colors = [
@@ -45,9 +49,15 @@ const FormSchema = z.object({
   }),
 });
 
-export function CreateBoard() {
+interface CreateBoardProps {
+  readonly children?: React.ReactNode;
+}
+
+export function CreateBoard({ children }: CreateBoardProps) {
   const { data: session } = useSession();
   const router = useRouter();
+  const [open, setOpen] = useState(false);
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -65,65 +75,97 @@ export function CreateBoard() {
     );
     if (response.status === 200) {
       form.reset();
+      setOpen(false);
       router.push(`/boards/${response.data.id}`);
     }
   }
 
   return (
-    <div className="grid grid-cols-4 gap-4">
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className="h-24 rounded-md bg-secondary">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        {children ?? (
+          <Button
+            variant="default"
+            className="rounded-md border-none bg-teal80 text-white"
+          >
             Create Board
           </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80" side="right">
-          <div className="grid gap-4">
-            <div className="space-y-2">
-              <h4 className="font-medium leading-none">New Board</h4>
-            </div>
-            <div>
-              <p className="text-sm">Background</p>
-              <div className="my-2 grid grid-cols-4 gap-2">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-10 rounded-md"
-                    style={{ background: getRandomGradient() }}
-                  ></div>
-                ))}
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <div className="flex flex-col gap-2">
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-4"
-                  >
-                    <FormField
-                      control={form.control}
-                      name="title"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Board Title</FormLabel>
-                          <FormControl>
-                            <Input {...field} className="h-8" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="submit" className="w-full">
-                      Create
-                    </Button>
-                  </form>
-                </Form>
-              </div>
+        )}
+      </DialogTrigger>
+      <DialogContent className="gap-0 p-0 sm:max-w-[500px]">
+        {/* Header */}
+        <DialogHeader className="rounded-t-lg bg-neutral05 px-6 py-4 dark:bg-neutral80">
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-lg font-semibold text-neutral100 dark:text-white">
+              Create New Board
+            </DialogTitle>
+          </div>
+          <p className="mt-1 text-sm text-neutral90 dark:text-neutral40">
+            Start collaborating with your team on a new board
+          </p>
+        </DialogHeader>
+
+        {/* Content */}
+        <div className="space-y-6 p-6">
+          {/* Background Selection */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-neutral100 dark:text-neutral30">
+              Background
+            </h4>
+            <div className="grid grid-cols-4 gap-3">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={`bg-${i}`}
+                  className="h-12 cursor-pointer rounded-lg transition-colors hover:border-teal60 dark:border-neutral60"
+                  style={{ background: getRandomGradient() }}
+                />
+              ))}
             </div>
           </div>
-        </PopoverContent>
-      </Popover>
-    </div>
+
+          {/* Form */}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-neutral100 dark:text-neutral30">
+                      Board Title
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Enter board title..."
+                        className="h-10 border-neutral70 bg-white dark:border-neutral60 dark:bg-neutral90"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </form>
+          </Form>
+        </div>
+
+        {/* Footer Buttons */}
+        <div className="flex justify-end gap-3 p-6 pt-0">
+          <Button
+            variant="outline"
+            onClick={() => setOpen(false)}
+            className="border-neutral30 text-neutral70 dark:border-neutral60 dark:text-neutral30"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={form.handleSubmit(onSubmit)}
+            className="bg-teal60 text-white hover:bg-teal70"
+          >
+            Create Board
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -32,21 +32,32 @@ export function NavProjects({
   const { isMobile } = useSidebar();
 
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>Your Boards</SidebarGroupLabel>
+    <SidebarGroup className="mt-6 px-2 group-data-[collapsible=icon]:hidden">
+      <SidebarGroupLabel className="mb-2 px-3 text-xs font-semibold uppercase tracking-wide text-neutral60 dark:text-neutral40">
+        Your Boards
+      </SidebarGroupLabel>
       <SidebarMenu>
         {boards?.map((board) => (
           <SidebarMenuItem key={board.board.name}>
-            <SidebarMenuButton asChild>
-              <Link href={`/boards/${board.board.id}`}>
-                <Command />
-                <span>{board.board.name}</span>
+            <SidebarMenuButton
+              asChild
+              className="text-neutral90 hover:bg-neutral10 dark:text-neutral10 dark:hover:bg-neutral30"
+            >
+              <Link
+                href={`/boards/${board.board.id}`}
+                className="flex items-center gap-3 rounded-md px-3 py-2"
+              >
+                <Command className="size-4" />
+                <span className="font-medium">{board.board.name}</span>
               </Link>
             </SidebarMenuButton>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuAction showOnHover>
-                  <MoreHorizontal />
+                <SidebarMenuAction
+                  showOnHover
+                  className="hover:bg-neutral10 dark:hover:bg-neutral30"
+                >
+                  <MoreHorizontal className="size-4 text-neutral60 dark:text-neutral40" />
                   <span className="sr-only">More</span>
                 </SidebarMenuAction>
               </DropdownMenuTrigger>
