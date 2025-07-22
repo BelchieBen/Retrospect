@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { db } from "../db";
+import { db, poolConfig } from "../db";
 import PostgresNotifier from "pg-realtime";
 
 const router = Router();
-const notifier = new PostgresNotifier(process.env.DATABASE_URL!);
+const notifier = new PostgresNotifier(poolConfig);
 const cardsChannel = notifier.channel("cards");
 
 router.get("/", async (req, res) => {

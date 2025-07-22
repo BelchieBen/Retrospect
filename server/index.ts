@@ -10,6 +10,7 @@ import boardRoutes from "./routes/boards";
 import columnRoutes from "./routes/columns";
 import cardRoutes from "./routes/cards";
 import commentRoutes from "./routes/comments";
+import { poolConfig } from "db";
 
 const app = express();
 const server = http.createServer(app);
@@ -20,22 +21,22 @@ const io = new Server(server, {
 });
 const port = 8000;
 
-const postsNotifier = new PostgresNotifier(process.env.DATABASE_URL!);
+const postsNotifier = new PostgresNotifier(poolConfig);
 const postsChannel = postsNotifier.channel("posts");
 
-const columnsNotifier = new PostgresNotifier(process.env.DATABASE_URL!);
+const columnsNotifier = new PostgresNotifier(poolConfig);
 const columnsChannel = columnsNotifier.channel("columns");
 
-const boardMembersNotifier = new PostgresNotifier(process.env.DATABASE_URL!);
+const boardMembersNotifier = new PostgresNotifier(poolConfig);
 const boardMembersChannel = boardMembersNotifier.channel("board_members");
 
-const boardNotifier = new PostgresNotifier(process.env.DATABASE_URL!);
+const boardNotifier = new PostgresNotifier(poolConfig);
 const boardChannel = boardNotifier.channel("boards");
 
-const cardsNotifier = new PostgresNotifier(process.env.DATABASE_URL!);
+const cardsNotifier = new PostgresNotifier(poolConfig);
 const cardsChannel = cardsNotifier.channel("cards");
 
-const commentsNotifier = new PostgresNotifier(process.env.DATABASE_URL!);
+const commentsNotifier = new PostgresNotifier(poolConfig);
 const commentsChannel = commentsNotifier.channel("comments");
 
 io.on("connection", (socket) => {
