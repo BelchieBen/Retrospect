@@ -54,13 +54,13 @@ router.get("/:boardId", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { name } = req.body as { name: string };
+  const { name, userId } = req.body as { name: string; userId: string };
   const column = await db.column.update({
     where: { id },
     data: { name },
   });
 
-  columnsChannel.notify(JSON.stringify(column));
+  columnsChannel.notify(JSON.stringify({ ...column, userId }));
   res.json(column);
 });
 

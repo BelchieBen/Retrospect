@@ -39,6 +39,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Input } from "~/components/ui/input";
 
 function DraggableCard({
   card,
@@ -142,9 +143,10 @@ export default function BoardColumn({
   });
 
   const updateColumnMutation = useMutation({
-    mutationFn: async (name: string) => {
+    mutationFn: async ({ name, userId }: { name: string; userId: string }) => {
       await axios.put(`${backendUrl}/columns/${column.id}`, {
         name,
+        userId,
       });
     },
     onError: (error) => {
@@ -155,22 +157,13 @@ export default function BoardColumn({
     setColumnName(column.name ?? "");
   }, [column]);
 
-  const saveColumnTitle = useCallback(
-    (name: string) => {
-      updateColumnMutation.mutate(name);
-    },
-    [updateColumnMutation],
-  );
-
-  const debouncedSaveColumnTitle = useMemo(
-    () => debounce(saveColumnTitle, 500),
-    [saveColumnTitle],
-  );
-
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const userId = session?.user?.id;
+    if (!userId) return;
     const newValue = e.target.value;
     setColumnName(newValue);
-    debouncedSaveColumnTitle(newValue);
+    updateColumnMutation.mutate({ name: newValue, userId });
+    // debouncedSaveColumnTitle(newValue);
   };
 
   const addCard = () => {
@@ -186,11 +179,12 @@ export default function BoardColumn({
   };
 
   return (
-    <div className="flex h-fit w-72 flex-col rounded-md bg-sidebar">
+    <div className="flex h-fit w-72 flex-col rounded-md bg-neutral05">
       <div className="flex justify-between">
         <input
-          className="m-1 h-9 w-full rounded-sm bg-transparent px-2 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+          className="m-1 h-9 w-full rounded-sm border-none bg-transparent px-2 focus-visible:outline-teal90"
           type="text"
+          placeholder="Enter column name..."
           value={columnName}
           onChange={handleChange}
         />

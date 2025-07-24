@@ -13,7 +13,7 @@ import axios from "axios";
 import { debounce } from "lodash";
 import { Button } from "~/components/ui/button";
 import { Dialog, DialogTrigger } from "~/components/ui/dialog";
-import { Edit2, X, Archive } from "lucide-react";
+import { Edit2, X, Archive, Check } from "lucide-react";
 import CardDialog from "./dialog";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -66,13 +66,12 @@ export function Card({
   if (card.gifUrl)
     return (
       <Dialog>
-        <div className={`flex flex-col ${card.archived ? "opacity-60" : ""}`}>
+        <div
+          className={`flex flex-col rounded-lg border-2 border-neutral10 bg-white ${card.archived ? "opacity-60" : ""}`}
+        >
           {!isEditingTitle ? (
             <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                className={`m-1 flex h-fit w-full flex-col items-start justify-start rounded-sm bg-transparent px-2 hover:bg-secondary ${card.archived ? "border-2 border-dashed border-gray-400" : ""}`}
-              >
+              <div className="flex flex-col gap-4 p-2">
                 <div className="relative h-32 w-full">
                   <Image src={card.gifUrl} fill alt={"GIF"} />
                   {card.archived && (
@@ -80,8 +79,7 @@ export function Card({
                       <Archive className="h-3 w-3 text-white" />
                     </div>
                   )}
-                  <div
-                    role="button"
+                  <button
                     className="absolute right-0 top-0 m-2 rounded-full bg-secondary p-1 shadow-md"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -102,14 +100,13 @@ export function Card({
                     }}
                   >
                     <Edit2 className="h-4 w-4" />
-                  </div>
+                  </button>
                 </div>
-                <div className="rounded-md">
+
+                <div className="flex w-full items-center justify-between">
                   <p className="text-wrap text-start text-base font-normal">
                     {cardName}
                   </p>
-                </div>
-                <div className="flex w-full items-end justify-end">
                   <Avatar className="h-6 w-6">
                     <AvatarImage
                       src={card.createdBy.image ?? ""}
@@ -118,7 +115,7 @@ export function Card({
                     <AvatarFallback>BB</AvatarFallback>
                   </Avatar>
                 </div>
-              </Button>
+              </div>
             </DialogTrigger>
           ) : (
             <div className="m-1 flex h-fit w-full flex-col items-start justify-start gap-2 rounded-sm p-2">
@@ -166,7 +163,7 @@ export function Card({
 
   return (
     <div
-      className={`flex h-11 items-center justify-between ${card.archived ? "opacity-60" : ""}`}
+      className={`flex h-11 items-center justify-between rounded-lg border-2 border-neutral10 bg-white ${card.archived ? "opacity-60" : ""}`}
     >
       <Dialog>
         {!isEditingTitle ? (
@@ -183,7 +180,7 @@ export function Card({
           </DialogTrigger>
         ) : (
           <textarea
-            className="m-1 w-full resize-none rounded-sm bg-transparent px-2 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+            className="m-1 w-full resize-none rounded-sm bg-transparent px-2 focus-visible:bg-transparent focus-visible:outline-none"
             ref={cardNameRef}
             value={cardName}
             onKeyDown={(e) => {
@@ -200,6 +197,7 @@ export function Card({
       </Dialog>
       <Button
         variant="ghost"
+        className="mx-1"
         onClick={() => {
           setIsEditingTitle(!isEditingTitle);
           if (!isEditingTitle) {
@@ -213,7 +211,7 @@ export function Card({
           }
         }}
       >
-        {!isEditingTitle ? <Edit2 /> : <X />}
+        {!isEditingTitle ? <Edit2 /> : <Check />}
       </Button>
     </div>
   );

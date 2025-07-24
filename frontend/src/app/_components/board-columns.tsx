@@ -301,8 +301,18 @@ export default function BoardColumns({
   // Handle websocket updates - disabled to prevent overwriting local state
   useEffect(() => {
     if (socket) {
-      const handleUpdate = async (payload: { userId: string }) => {
-        if (session.data?.user.id !== payload.userId) {
+      const handleUpdate = async (payload: string) => {
+        const payloadData = JSON.parse(payload) as {
+          id: string;
+          userId: string;
+        };
+        console.log(
+          "Received column update payload:",
+          payloadData.userId,
+          " SESSION USER ID:",
+          session.data?.user.id,
+        );
+        if (session.data?.user.id !== payloadData.userId) {
           await refetch();
         }
       };

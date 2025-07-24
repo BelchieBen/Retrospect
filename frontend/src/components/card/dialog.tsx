@@ -167,7 +167,6 @@ export default function CardDialog({
   };
 
   useLayoutEffect(() => {
-    console.log("REF ", cardNameRef);
     if (cardNameRef.current) {
       resizeTextArea(cardNameRef.current);
     }
@@ -192,7 +191,7 @@ export default function CardDialog({
                 spellCheck
                 rows={1}
                 value={cardName}
-                className="w-full resize-none overflow-hidden bg-transparent p-1 focus-visible:border-b-2 focus-visible:border-solid focus-visible:border-primary focus-visible:outline-none"
+                className="w-full resize-none overflow-hidden border-b-2 border-teal80 bg-transparent p-1 focus-visible:outline-none"
                 onChange={handleChange}
               />
             </div>
