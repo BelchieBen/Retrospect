@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, ChevronDown, HelpCircle, Search } from "lucide-react";
+import { IBell, IQuestion, ISearch } from "~/components/Iconography/Icons";
 import Link from "next/link";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -33,7 +33,6 @@ export function SiteHeader() {
                   <div className="h-3 w-3 rounded-sm bg-teal80 dark:bg-teal70"></div>
                 </div>
                 Retrospect
-                <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
@@ -54,7 +53,9 @@ export function SiteHeader() {
         {/* Center Section - Search Bar */}
         <div className="mx-8 max-w-md flex-1">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
+            <div className="absolute left-3 top-1/2 -translate-y-1/2">
+              <ISearch color="white" size={20} />
+            </div>
             <Input
               type="search"
               placeholder="Search"
@@ -71,7 +72,7 @@ export function SiteHeader() {
             size="icon"
             className="hover:bg-white/10 relative h-8 w-8 text-white"
           >
-            <Bell className="h-5 w-5" />
+            <IBell color="white" size={20} />
             <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
               2
             </span>
@@ -83,7 +84,7 @@ export function SiteHeader() {
             size="icon"
             className="hover:bg-white/10 h-8 w-8 text-white"
           >
-            <HelpCircle className="h-5 w-5" />
+            <IQuestion color="white" size={20} />
           </Button>
 
           <ThemeToggle />

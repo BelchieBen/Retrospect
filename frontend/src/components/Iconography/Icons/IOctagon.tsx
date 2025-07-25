@@ -1,0 +1,28 @@
+import HelixPalette from "../../../styles/palette";
+
+export const IOctagon = ({
+  color = HelixPalette.neutral90,
+  dataId,
+  size = 24,
+  style,
+}: {
+  color?: string;
+  dataId?: string;
+  size?: number;
+  style?: React.CSSProperties;
+}) => {
+  return (
+    <svg
+      data-id={dataId}
+      fill={color}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      style={style}
+    >
+      <path d="M15.3528 2.03515C15.8832 2.03765 16.3909 2.25077 16.7642 2.62761L21.417 7.32455C21.7903 7.70139 21.9986 8.21109 21.9961 8.74151L21.9649 15.3528C21.9624 15.8832 21.7493 16.3909 21.3724 16.7642L16.6755 21.417C16.2986 21.7903 15.7889 21.9986 15.2585 21.9961L8.64726 21.9649C8.11683 21.9624 7.60912 21.7493 7.23582 21.3724L2.58303 16.6755C2.20973 16.2986 2.00142 15.7889 2.00393 15.2585L2.03515 8.64726C2.03765 8.11683 2.25077 7.60912 2.62761 7.23582L7.32455 2.58303C7.70139 2.20973 8.21109 2.00142 8.74151 2.00393L15.3528 2.03515Z"></path>
+    </svg>
+  );
+};
+
+export default IOctagon;

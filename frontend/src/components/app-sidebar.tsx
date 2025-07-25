@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Command } from "lucide-react";
 
 import { NavMain } from "~/components/nav-main";
 import { NavProjects } from "~/components/nav-workspace";
@@ -15,6 +14,7 @@ import {
   SidebarMenuItem,
 } from "~/components/ui/sidebar";
 import { api } from "~/trpc/server";
+import { IPagesStack } from "./Iconography/Icons";
 
 export async function AppSidebar({
   ...props
@@ -35,7 +35,7 @@ export async function AppSidebar({
             >
               <a href="/" className="flex items-center gap-3">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-teal70 text-white dark:bg-teal60">
-                  <Command className="size-4" />
+                  <IPagesStack color="white" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold text-black dark:text-white">

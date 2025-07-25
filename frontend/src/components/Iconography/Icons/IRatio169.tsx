@@ -1,0 +1,33 @@
+import HelixPalette from "../../../styles/palette";
+
+export const IRatio169 = ({
+  color = HelixPalette.neutral90,
+  dataId,
+  size = 24,
+  style,
+}: {
+  color?: string;
+  dataId?: string;
+  size?: number;
+  style?: React.CSSProperties;
+}) => {
+  return (
+    <svg
+      data-id={dataId}
+      fill={color}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      style={style}
+    >
+      <path d="M16.8501 5.08579L17.2288 4.70711C17.6193 4.31658 17.6193 3.68342 17.2288 3.29289C16.8383 2.90237 16.2051 2.90237 15.8146 3.29289L13.6933 5.41421C13.3028 5.80474 13.3028 6.4379 13.6933 6.82843L15.8146 8.94975C16.2051 9.34027 16.8383 9.34027 17.2288 8.94975C17.6193 8.55922 17.6193 7.92606 17.2288 7.53553L16.7791 7.08579H17.9866C19.0911 7.08579 19.9866 7.98122 19.9866 9.08579V11.0858C19.9866 11.6381 20.4343 12.0858 20.9866 12.0858C21.5388 12.0858 21.9866 11.6381 21.9866 11.0858V9.08579C21.9866 6.87665 20.1957 5.08579 17.9866 5.08579H16.8501Z"></path>
+      <path
+        d="M2 11C2 10.4477 2.44772 10 3 10H18C18.5523 10 19 10.4477 19 11V19C19 19.5523 18.5523 20 18 20H3C2.44772 20 2 19.5523 2 19V11ZM4 12H17V18H4V12Z"
+        clipRule="evenodd"
+        fillRule="evenodd"
+      ></path>
+    </svg>
+  );
+};
+
+export default IRatio169;

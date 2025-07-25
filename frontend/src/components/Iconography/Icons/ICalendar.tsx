@@ -1,0 +1,32 @@
+import HelixPalette from "../../../styles/palette";
+
+export const ICalendar = ({
+  color = HelixPalette.neutral90,
+  dataId,
+  size = 24,
+  style,
+}: {
+  color?: string;
+  dataId?: string;
+  size?: number;
+  style?: React.CSSProperties;
+}) => {
+  return (
+    <svg
+      data-id={dataId}
+      fill={color}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      style={style}
+    >
+      <path
+        d="M17 4H20C21.104 4 22 4.896 22 6V18C22 19.104 21.104 20 20 20H4C2.896 20 2 19.104 2 18V6C2 4.896 2.896 4 4 4H7V2H9V4H15V2H17V4ZM4 10H20V6H17V8H15V6H9V8H7V6H4V10ZM20 14H17V11H20V14ZM17 18H20V15H17V18ZM16 18H13V15H16V18ZM8 18H11V15H8V18ZM7 18H4V15H7V18ZM8 14H11V11H8V14ZM16 14H13V11H16V14ZM4 14H7V11H4V14Z"
+        clipRule="evenodd"
+        fillRule="evenodd"
+      ></path>
+    </svg>
+  );
+};
+
+export default ICalendar;

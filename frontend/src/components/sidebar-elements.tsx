@@ -1,11 +1,10 @@
 import {
-  BookMarked,
-  Users,
-  Plus,
-  Settings2,
-  LifeBuoy,
-  Send,
-} from "lucide-react";
+  IBookmarkOutline,
+  ICog,
+  IPaperPlane,
+  IQuestion,
+  IUsers,
+} from "~/components/Iconography/Icons";
 
 export const SidebarElements = {
   user: {
@@ -17,15 +16,15 @@ export const SidebarElements = {
     {
       title: "Boards",
       url: "/boards",
-      icon: BookMarked,
+      icon: <IBookmarkOutline />,
       isActive: true,
     },
     {
       title: "Members",
       url: "/",
-      icon: Users,
+      icon: <IUsers />,
       action: {
-        icon: Plus,
+        icon: "plus",
         url: "/",
       },
     },
@@ -33,7 +32,7 @@ export const SidebarElements = {
     {
       title: "Workspace Settings",
       url: "/",
-      icon: Settings2,
+      icon: <ICog />,
       items: [
         {
           title: "General",
@@ -58,12 +57,12 @@ export const SidebarElements = {
     {
       title: "Support",
       url: "/",
-      icon: LifeBuoy,
+      icon: <IQuestion />,
     },
     {
       title: "Feedback",
       url: "/",
-      icon: Send,
+      icon: <IPaperPlane />,
     },
   ],
 };

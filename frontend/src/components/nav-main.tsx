@@ -1,4 +1,4 @@
-import { ChevronRight } from "lucide-react";
+import { ITriangleSide } from "~/components/Iconography/Icons";
 import { SidebarElements } from "./sidebar-elements";
 const items = SidebarElements.navMain;
 
@@ -35,7 +35,7 @@ export function NavMain() {
                   href={item.url}
                   className="flex items-center gap-3 rounded-md px-3 py-2"
                 >
-                  <item.icon className="size-4" />
+                  {item.icon}
                   <span className="font-medium">{item.title}</span>
                 </a>
               </SidebarMenuButton>
@@ -43,7 +43,7 @@ export function NavMain() {
                 <>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuAction className="hover:bg-neutral10 data-[state=open]:rotate-90 dark:hover:bg-neutral30">
-                      <ChevronRight className="size-4" />
+                      <ITriangleSide />
                       <span className="sr-only">Toggle</span>
                     </SidebarMenuAction>
                   </CollapsibleTrigger>
@@ -71,10 +71,10 @@ export function NavMain() {
               {item.action && (
                 <SidebarMenuAction className="hover:bg-neutral10 data-[state=open]:rotate-90 dark:hover:bg-neutral30">
                   <a href={item.action.url}>
-                    <item.action.icon
-                      size={16}
-                      className="text-neutral60 dark:text-neutral40"
-                    />
+                    {/* <Icon
+                      name={item.action.icon}
+                      className="h-4 w-4 text-neutral60 dark:text-neutral40"
+                    /> */}
                   </a>
                   <span className="sr-only">Toggle</span>
                 </SidebarMenuAction>

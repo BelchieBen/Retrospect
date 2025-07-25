@@ -1,6 +1,6 @@
 "use client";
 
-import { Command, Folder, MoreHorizontal, Share, Trash2 } from "lucide-react";
+import { Folder, MoreHorizontal, Share, Trash2 } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -20,6 +20,7 @@ import {
 } from "~/components/ui/sidebar";
 import { type Prisma } from "@prisma/client";
 import Link from "next/link";
+import { IPagesStack } from "./Iconography/Icons";
 
 export function NavProjects({
   boards,
@@ -47,7 +48,7 @@ export function NavProjects({
                 href={`/boards/${board.board.id}`}
                 className="flex items-center gap-3 rounded-md px-3 py-2"
               >
-                <Command className="size-4" />
+                <IPagesStack />
                 <span className="font-medium">{board.board.name}</span>
               </Link>
             </SidebarMenuButton>

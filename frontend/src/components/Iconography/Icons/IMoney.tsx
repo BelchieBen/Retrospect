@@ -1,0 +1,33 @@
+import HelixPalette from "../../../styles/palette";
+
+export const IMoney = ({
+  color = HelixPalette.neutral90,
+  dataId,
+  size = 24,
+  style,
+}: {
+  color?: string;
+  dataId?: string;
+  size?: number;
+  style?: React.CSSProperties;
+}) => {
+  return (
+    <svg
+      data-id={dataId}
+      fill={color}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      style={style}
+    >
+      <path d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z"></path>
+      <path
+        d="M2 16V8C2 7.93096 2.0035 7.86275 2.01033 7.79551C2.11275 6.787 2.96447 6 4 6H20C21.1046 6 22 6.89543 22 8V16C22 17.1046 21.1046 18 20 18H4C2.89543 18 2 17.1046 2 16ZM20 10C18.8954 10 18 9.10457 18 8H6C6 9.10457 5.10457 10 4 10V14C5.10457 14 6 14.8954 6 16H18C18 14.8954 18.8954 14 20 14V10Z"
+        clipRule="evenodd"
+        fillRule="evenodd"
+      ></path>
+    </svg>
+  );
+};
+
+export default IMoney;

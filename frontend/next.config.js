@@ -11,6 +11,15 @@ const config = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  devIndicators: false,
+  turbopack: {
+    rules: {
+      "*.svg": {
+        loaders: ["@svgr/webpack"],
+        as: "*.js",
+      },
+    },
+  },
   images: {
     remotePatterns: [
       {
