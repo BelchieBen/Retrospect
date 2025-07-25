@@ -352,9 +352,9 @@ export default function BoardColumns({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex h-full flex-col gap-4">
         {/* Board header with controls */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-shrink-0 items-center justify-between">
           <h1 className="text-2xl font-bold">{initialBoard.name}</h1>
           <div className="flex items-center gap-3">
             <AvatarGroup maxDisplay={4} size="sm" />
@@ -427,11 +427,15 @@ export default function BoardColumns({
           </div>
         </div>
 
-        <div className={`flex gap-4`}>
+        <div className="flex flex-1 gap-4 overflow-auto pb-4">
           {localColumns?.map((column) => (
             <BoardColumn key={column.id} column={column} />
           ))}
-          <Button variant={"outline"} onClick={addColumn} className="w-fit">
+          <Button
+            variant={"outline"}
+            onClick={addColumn}
+            className="min-w-fit flex-shrink-0 self-start"
+          >
             <Plus />
           </Button>
         </div>

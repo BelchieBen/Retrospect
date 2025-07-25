@@ -179,7 +179,7 @@ export default function BoardColumn({
   };
 
   return (
-    <div className="flex h-fit w-72 flex-col rounded-md bg-neutral05">
+    <div className="flex h-fit max-h-full w-72 flex-shrink-0 flex-col rounded-md bg-neutral05">
       <div className="flex justify-between">
         <input
           className="m-1 h-9 w-full rounded-sm border-none bg-transparent px-2 focus-visible:outline-teal90"
@@ -254,7 +254,7 @@ export default function BoardColumn({
 
       <div
         ref={setNodeRef}
-        className={`flex min-h-[100px] flex-col gap-4 p-2 transition-all duration-200 ${isDraggingOverFromDifferentColumn ? "rounded-lg border-2 border-dashed border-blue-300 bg-blue-50" : ""}`}
+        className={`no-scrollbar flex min-h-[100px] flex-1 flex-col gap-4 overflow-y-auto p-2 transition-all duration-200 ${isDraggingOverFromDifferentColumn ? "rounded-lg border-2 border-dashed border-blue-300 bg-blue-50" : ""}`}
       >
         <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
           {column.cards.map((card) => (

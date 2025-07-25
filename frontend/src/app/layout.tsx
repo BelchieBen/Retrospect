@@ -23,8 +23,8 @@ export default async function RootLayout({
   const session = await getServerAuthSession();
 
   return (
-    <html lang="en" className="font-sans" suppressHydrationWarning>
-      <body>
+    <html lang="en" className="h-full font-sans" suppressHydrationWarning>
+      <body className="h-full">
         <TRPCReactProvider>
           <ThemeProvider
             attribute="class"
@@ -34,12 +34,14 @@ export default async function RootLayout({
           >
             <Providers session={session}>
               {session?.user ? (
-                <div className="[--header-height:calc(theme(spacing.14))]">
-                  <SidebarProvider className="flex flex-col">
+                <div className="flex h-screen flex-col [--header-height:calc(theme(spacing.14))]">
+                  <SidebarProvider className="flex min-h-0 flex-1 flex-col">
                     <SiteHeader />
-                    <div className="flex flex-1">
+                    <div className="flex min-h-0 flex-1 overflow-hidden">
                       <AppSidebar />
-                      <SidebarInset>{children}</SidebarInset>
+                      <SidebarInset className="min-h-0 flex-1 overflow-hidden">
+                        {children}
+                      </SidebarInset>
                     </div>
                   </SidebarProvider>
                 </div>

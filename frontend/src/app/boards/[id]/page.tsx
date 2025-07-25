@@ -27,7 +27,7 @@ export default async function BoardPage({
   }
 
   return (
-    <div className="m-4 flex flex-col gap-4">
+    <div className="flex h-full flex-col overflow-hidden p-4">
       <BoardColumns initialBoard={board} />
     </div>
   );
