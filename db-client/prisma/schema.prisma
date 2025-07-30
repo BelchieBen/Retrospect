@@ -160,6 +160,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  role          Role      @default(USER)
 
   Boards Boards[]
 
@@ -196,4 +197,9 @@ model Feedback {
 
   @@index([type])
   @@index([createdAt])
+}
+
+enum Role {
+  USER
+  ADMIN
 }
