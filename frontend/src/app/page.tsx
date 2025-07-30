@@ -17,7 +17,7 @@ export default async function Home() {
   const dashboardStats = await api.board.getDashboardStats();
 
   return (
-    <div className="flex-1 space-y-8 p-8 pt-6">
+    <div className="flex-1 space-y-8 overflow-y-scroll p-8 pt-6">
       {/* Welcome Header */}
       <div className="flex items-center justify-between">
         <div>

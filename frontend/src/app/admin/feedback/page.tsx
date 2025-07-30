@@ -28,7 +28,7 @@ export default async function AdminFeedbackPage() {
   ]);
 
   return (
-    <div className="flex-1 space-y-8 p-8 pt-6">
+    <div className="flex-1 space-y-8 overflow-y-scroll p-8 pt-6">
       {/* Header Section */}
       <div className="flex items-center justify-between">
         <div>
