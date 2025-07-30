@@ -17,6 +17,7 @@ import {
 import { api } from "~/trpc/server";
 import { getServerAuthSession } from "~/server/auth";
 import { IPagesStack } from "./Iconography/Icons";
+import Image from "next/image";
 
 export async function AppSidebar({
   ...props
@@ -36,13 +37,18 @@ export async function AppSidebar({
               asChild
               className="hover:bg-neutral10 dark:hover:bg-neutral30"
             >
-              <a href="/" className="flex items-center gap-3">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-teal70 text-white dark:bg-teal60">
-                  <IPagesStack color="white" />
+              <a href="/" className="flex items-center gap-2">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-white">
+                  <Image
+                    src={"/Ideagen_Cubes.png"}
+                    height={24}
+                    width={24}
+                    alt="Ideagen"
+                  />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold text-black dark:text-white">
-                    Spartan
+                    Ideagen
                   </span>
                   <span className="truncate text-xs text-neutral60 dark:text-neutral50">
                     Development
