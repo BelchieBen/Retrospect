@@ -10,6 +10,7 @@ import boardRoutes from "./routes/boards";
 import columnRoutes from "./routes/columns";
 import cardRoutes from "./routes/cards";
 import commentRoutes from "./routes/comments";
+import feedbackRoutes from "./routes/feedback";
 import { poolConfig } from "db";
 
 const app = express();
@@ -39,12 +40,16 @@ const cardsChannel = cardsNotifier.channel("cards");
 const commentsNotifier = new PostgresNotifier(poolConfig);
 const commentsChannel = commentsNotifier.channel("comments");
 
+const feedbackNotifier = new PostgresNotifier(poolConfig);
+const feedbackChannel = feedbackNotifier.channel("feedback");
+
 io.on("connection", (socket) => {
   socket.join("posts");
   socket.join("columns");
   socket.join("cards");
   socket.join("comments");
   socket.join("boards");
+  socket.join("feedback");
   console.log("a user connected");
 
   socket.on("disconnect", () => {
@@ -78,6 +83,10 @@ boardChannel.subscribe((payload) => {
   }
 });
 
+feedbackChannel.subscribe((payload) => {
+  io.to("feedback").emit("feedback_updated", payload);
+});
+
 server.listen(port, () => {
   console.log(`listening on port ${port}`);
 });
@@ -95,3 +104,4 @@ app.use("/boards", boardRoutes);
 app.use("/columns", columnRoutes);
 app.use("/cards", cardRoutes);
 app.use("/comments", commentRoutes);
+app.use("/feedback", feedbackRoutes);

@@ -22,7 +22,7 @@ export default async function Home() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-black dark:text-white">
-            Welcome back, {session.user.name}!
+            Welcome back, {session.user.name?.split(" ")[0]}!
           </h1>
           <p className="mt-1 text-neutral60 dark:text-neutral40">
             Ready to collaborate? Let&apos;s get your team organized.

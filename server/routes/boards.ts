@@ -59,4 +59,99 @@ router.get("/:id/members", async (req, res) => {
   res.json(members);
 });
 
+// Archive/Unarchive board
+router.patch("/:id/archive", async (req, res) => {
+  const { id } = req.params;
+  const { archived, userId } = req.body as {
+    archived: boolean;
+    userId: string;
+  };
+
+  try {
+    // Check if user is a member of the board
+    const boardMember = await db.boardMembers.findFirst({
+      where: {
+        boardId: id,
+        userId: userId,
+      },
+      include: { board: true },
+    });
+
+    if (!boardMember) {
+      res.status(403).json({ error: "User is not a member of this board" });
+      return;
+    }
+
+    // Update board archive status
+    const updatedBoard = await db.boards.update({
+      where: { id },
+      data: {
+        archived,
+        archivedAt: archived ? new Date() : null,
+      },
+    });
+
+    // Notify via socket.io
+    boardsChannel.notify(
+      JSON.stringify({
+        boardId: id,
+        archived,
+        userId,
+        action: archived ? "archived" : "unarchived",
+      })
+    );
+
+    res.json(updatedBoard);
+  } catch (error) {
+    console.error("Error archiving/unarchiving board:", error);
+    res.status(500).json({ error: "Failed to archive/unarchive board" });
+  }
+});
+
+// Delete board
+router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+  const { userId } = req.body as { userId: string };
+
+  try {
+    // Check if user is the owner of the board
+    const board = await db.boards.findUnique({
+      where: { id },
+      select: { ownerId: true, name: true },
+    });
+
+    if (!board) {
+      res.status(404).json({ error: "Board not found" });
+      return;
+    }
+
+    if (board.ownerId !== userId) {
+      res
+        .status(403)
+        .json({ error: "Only the board owner can delete the board" });
+      return;
+    }
+
+    // Delete the board (cascade will handle related data)
+    await db.boards.delete({
+      where: { id },
+    });
+
+    // Notify via socket.io
+    boardsChannel.notify(
+      JSON.stringify({
+        boardId: id,
+        userId,
+        boardName: board.name,
+        action: "deleted",
+      })
+    );
+
+    res.json({ success: true, message: "Board deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting board:", error);
+    res.status(500).json({ error: "Failed to delete board" });
+  }
+});
+
 export default router;

@@ -3,6 +3,7 @@ import * as React from "react";
 import { NavMain } from "~/components/nav-main";
 import { NavProjects } from "~/components/nav-workspace";
 import { NavSecondary } from "~/components/nav-secondary";
+import { NavAdmin } from "~/components/nav-admin";
 import { NavUser } from "~/components/nav-user";
 import {
   Sidebar,
@@ -14,12 +15,14 @@ import {
   SidebarMenuItem,
 } from "~/components/ui/sidebar";
 import { api } from "~/trpc/server";
+import { getServerAuthSession } from "~/server/auth";
 import { IPagesStack } from "./Iconography/Icons";
 
 export async function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
   const boards = await api.board.getBoards();
+  const session = await getServerAuthSession();
   return (
     <Sidebar
       className="top-[--header-height] !h-[calc(100svh-var(--header-height))] border-r border-neutral20 bg-white dark:border-neutral70 dark:bg-neutral10"
@@ -52,7 +55,8 @@ export async function AppSidebar({
       </SidebarHeader>
       <SidebarContent className="bg-white px-2 py-4 dark:bg-neutral10">
         <NavMain />
-        <NavProjects boards={boards?.BoardMembers} />
+        <NavProjects initialBoards={boards} />
+        {session?.user?.role === "ADMIN" && <NavAdmin />}
         <NavSecondary className="mt-auto" />
       </SidebarContent>
       <SidebarFooter className="border-t border-neutral20 bg-neutral05 p-2 dark:border-neutral70 dark:bg-neutral20">

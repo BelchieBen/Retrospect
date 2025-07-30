@@ -52,7 +52,16 @@ export const boardRouter = createTRPCRouter({
   getBoards: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.db.user.findUnique({
       where: { id: ctx.session.user.id },
-      include: { BoardMembers: { include: { board: true } } },
+      include: {
+        BoardMembers: {
+          include: { board: true },
+          orderBy: {
+            board: {
+              archived: "asc", // false (not archived) first, then true (archived)
+            },
+          },
+        },
+      },
     });
   }),
 

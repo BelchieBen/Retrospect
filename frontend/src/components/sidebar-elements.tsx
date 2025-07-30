@@ -61,7 +61,7 @@ export const SidebarElements = {
     },
     {
       title: "Feedback",
-      url: "/",
+      url: "/feedback",
       icon: <IPaperPlane />,
     },
   ],
