@@ -93,14 +93,12 @@ export default async function Home() {
           <CardContent className="flex items-center justify-between p-6">
             <div className="flex items-center gap-4">
               <div className="bg-white/20 rounded-full p-3">
-                <IAlert color="white" size={32} />
+                <IDashboard color="white" size={32} />
               </div>
               <div>
                 <div className="text-sm opacity-90">Total Boards</div>
                 <div className="text-3xl font-bold">
-                  {dashboardStats.totalBoards > 0
-                    ? Math.floor(dashboardStats.totalBoards / 2)
-                    : 0}
+                  {dashboardStats.totalBoards}
                 </div>
                 <div className="text-xs opacity-90">
                   Active collaboration spaces
@@ -108,9 +106,7 @@ export default async function Home() {
               </div>
             </div>
             <div className="text-6xl font-bold opacity-20">
-              {dashboardStats.totalBoards > 0
-                ? Math.floor(dashboardStats.totalBoards / 2)
-                : 0}
+              {dashboardStats.totalBoards}
             </div>
           </CardContent>
         </Card>
