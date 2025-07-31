@@ -6,15 +6,10 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 import { ThemeToggle } from "~/app/_components/theme-toggle";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import RetospectLogo from "./retospect-logo";
 
 export function SiteHeader() {
   const session = useSession();
@@ -22,32 +17,11 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 w-full bg-teal80 text-white dark:bg-teal70">
       <div className="flex h-14 w-full items-center justify-between px-4">
         {/* Left Section - Quality Management Dropdown */}
-        <div className="flex items-center">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="hover:bg-white/10 flex items-center gap-2 font-medium text-white"
-              >
-                <div className="flex h-6 w-6 items-center justify-center rounded-sm bg-white">
-                  <div className="h-3 w-3 rounded-sm bg-teal80 dark:bg-teal70"></div>
-                </div>
-                Retrospect
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-48">
-              <DropdownMenuItem>
-                <Link href="/boards" className="w-full">
-                  Retrospect Boards
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link href="/dashboard" className="w-full">
-                  Dashboard
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="flex items-center px-2">
+          <Link href="/" className="flex items-center gap-2">
+            <RetospectLogo size={44} />
+            <h1 className="text-xl font-medium">Retrospect</h1>
+          </Link>
         </div>
 
         {/* Center Section - Search Bar */}
