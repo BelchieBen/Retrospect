@@ -22,6 +22,7 @@ import {
   ITick2,
   IUsers,
 } from "~/components/Iconography/Icons";
+import { TemplateCard } from "~/components/template-card";
 
 export default async function Home() {
   const session = await getServerAuthSession();
@@ -50,7 +51,7 @@ export default async function Home() {
       <div
         className="relative flex items-center justify-between overflow-hidden rounded-lg bg-cover bg-center bg-no-repeat p-6"
         style={{
-          backgroundImage: "url('/prompt.svg')",
+          backgroundImage: "url('/header_img.svg')",
         }}
       >
         {/* Overlay for better text readability */}
@@ -246,28 +247,7 @@ export default async function Home() {
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {templates.slice(0, 3).map((template) => (
-                <Card
-                  key={template.id}
-                  className="cursor-pointer border-neutral20 transition-all hover:shadow-md dark:border-neutral60"
-                >
-                  <CardContent className="p-4">
-                    <div className="mb-3 h-24 rounded-lg bg-gradient-to-br from-teal10 to-blue10 dark:from-teal20 dark:to-blue20"></div>
-                    <h3 className="text-sm font-medium text-black dark:text-white">
-                      {template.name}
-                    </h3>
-                    <p className="mt-1 text-xs text-neutral60 dark:text-neutral40">
-                      {template.description}
-                    </p>
-                    <div className="mt-2 flex items-center gap-2">
-                      <span className="rounded-full bg-teal10 px-2 py-1 text-xs text-teal70 dark:bg-teal20 dark:text-teal60">
-                        Template
-                      </span>
-                      <span className="text-xs text-neutral50 dark:text-neutral50">
-                        Popular
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
+                <TemplateCard key={template.id} template={template} />
               ))}
             </div>
           </div>
