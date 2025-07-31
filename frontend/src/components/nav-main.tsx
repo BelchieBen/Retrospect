@@ -1,5 +1,7 @@
-import { ITriangleSide } from "~/components/Iconography/Icons";
+import { IChevronRight } from "~/components/Iconography/Icons";
 import { SidebarElements } from "./sidebar-elements";
+import HelixPalette from "~/styles/palette";
+
 const items = SidebarElements.navMain;
 
 import {
@@ -43,7 +45,7 @@ export function NavMain() {
                 <>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuAction className="hover:bg-neutral10 data-[state=open]:rotate-90 dark:hover:bg-neutral30">
-                      <ITriangleSide />
+                      <IChevronRight color={HelixPalette.neutral90} />
                       <span className="sr-only">Toggle</span>
                     </SidebarMenuAction>
                   </CollapsibleTrigger>

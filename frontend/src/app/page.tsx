@@ -53,9 +53,6 @@ export default async function Home() {
           backgroundImage: "url('/header_img.svg')",
         }}
       >
-        {/* Overlay for better text readability */}
-        <div className="bg-black/20 dark:bg-black/40 absolute inset-0 rounded-lg"></div>
-
         <div className="relative z-10 flex items-center gap-6">
           <div>
             <div className="flex items-center gap-2">
@@ -70,7 +67,7 @@ export default async function Home() {
                 })}
               </div>
             </div>
-            <h1 className="text-3xl font-bold text-neutral90 drop-shadow-lg">
+            <h1 className="text-3xl font-bold text-neutral90">
               Good {timeOfDay}, {session.user.name?.split(" ")[0]}!
             </h1>
           </div>
@@ -86,7 +83,7 @@ export default async function Home() {
         </Button>
       </div>
 
-      {/* Action Cards */}
+      {/* Metrics Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="border-0 bg-gradient-to-br from-pink50 to-pink60 text-white">
           <CardContent className="flex items-center justify-between p-6">
@@ -257,27 +254,26 @@ export default async function Home() {
                 My quick actions
               </h2>
             </div>
-            <Button variant="ghost" size="sm">
-              Manage actions
-            </Button>
           </div>
 
           <div className="space-y-3">
-            <Card className="cursor-pointer border-neutral20 transition-all hover:shadow-md dark:border-neutral60">
-              <CardContent className="flex items-center gap-4 p-4">
-                <div className="rounded-lg bg-green10 p-3 dark:bg-green20">
-                  <IEditText color={HelixPalette.green70} size={24} />
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-black dark:text-white">
-                    Create
-                  </h3>
-                  <p className="text-xs text-neutral60 dark:text-neutral40">
-                    Start a new board
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <CreateBoard>
+              <Card className="cursor-pointer border-neutral20 transition-all hover:shadow-md dark:border-neutral60">
+                <CardContent className="flex items-center gap-4 p-4">
+                  <div className="rounded-lg bg-green10 p-3 dark:bg-green20">
+                    <IEditText color={HelixPalette.green70} size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-black dark:text-white">
+                      Create
+                    </h3>
+                    <p className="text-xs text-neutral60 dark:text-neutral40">
+                      Start a new board
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </CreateBoard>
 
             <Card className="cursor-pointer border-neutral20 transition-all hover:shadow-md dark:border-neutral60">
               <CardContent className="flex items-center gap-4 p-4">

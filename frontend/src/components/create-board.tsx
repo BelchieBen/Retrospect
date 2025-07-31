@@ -108,7 +108,7 @@ export function CreateBoard({ children }: CreateBoardProps) {
         {/* Content */}
         <div className="space-y-6 p-6">
           {/* Background Selection */}
-          <div className="space-y-3">
+          {/* <div className="space-y-3">
             <h4 className="text-sm font-medium text-neutral100 dark:text-neutral30">
               Background
             </h4>
@@ -121,7 +121,7 @@ export function CreateBoard({ children }: CreateBoardProps) {
                 />
               ))}
             </div>
-          </div>
+          </div> */}
 
           {/* Form */}
           <Form {...form}>
