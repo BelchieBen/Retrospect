@@ -4,7 +4,7 @@ export const templates = [
     name: "Retrospective Board",
     description: "Perfect for sprint retrospectives and team reflection",
     color: "teal",
-    icon: "🔄",
+    image: "/retrospective.png",
     category: "Team Management",
     columns: [
       { name: "What Went Well", position: 1 },
@@ -17,7 +17,7 @@ export const templates = [
     name: "Kanban Template",
     description: "Track work progress with To Do, In Progress, Done columns",
     color: "green",
-    icon: "📋",
+    image: "/kanban.svg",
     category: "Project Management",
     columns: [
       { name: "To Do", position: 1 },
@@ -30,7 +30,7 @@ export const templates = [
     name: "Sprint Planning",
     description: "Plan your upcoming sprint with backlog and estimation",
     color: "pink",
-    icon: "🎯",
+    image: "/sprint_planning.png",
     category: "Agile",
     columns: [
       { name: "Backlog", position: 1 },
@@ -45,7 +45,7 @@ export const templates = [
     name: "Brainstorming Session",
     description: "Collect ideas and organize thoughts collaboratively",
     color: "orange",
-    icon: "💡",
+    image: "💡",
     category: "Creative",
     columns: [
       { name: "Ideas", position: 1 },

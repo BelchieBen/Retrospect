@@ -2,14 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
+import { Card, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -24,6 +17,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 interface TemplateCardProps {
   template: {
@@ -31,7 +25,7 @@ interface TemplateCardProps {
     name: string;
     description: string;
     color: string;
-    icon: string;
+    image: string;
     category: string;
     columns: Array<{
       name: string;
@@ -86,8 +80,16 @@ export function TemplateCard({ template }: TemplateCardProps) {
     >
       <CardContent className="flex h-full flex-col justify-between p-4">
         <div>
-          <div className="mb-3 h-24 rounded-lg bg-gradient-to-br from-teal10 to-blue10 dark:from-teal20 dark:to-blue20"></div>
-          <h3 className="text-sm font-medium text-black dark:text-white">
+          <div className="flex items-center justify-center rounded-lg bg-neutral05">
+            <Image
+              src={template.image}
+              alt={template.name}
+              width={100}
+              height={100}
+              className="mb-2"
+            />
+          </div>
+          <h3 className="mt-2 text-sm font-medium text-black dark:text-white">
             {template.name}
           </h3>
           <p className="mt-1 text-xs text-neutral60 dark:text-neutral40">

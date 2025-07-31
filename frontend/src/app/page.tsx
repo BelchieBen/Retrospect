@@ -6,7 +6,6 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { CreateBoard } from "~/components/create-board";
 import { templates } from "~/constants/board-templates";
-import { IAlert } from "~/components/Iconography/Icons/IAlert";
 import { IInfo } from "~/components/Iconography/Icons/IInfo";
 import { ICalendar } from "~/components/Iconography/Icons/ICalendar";
 import { IDashboard } from "~/components/Iconography/Icons/IDashboard";
