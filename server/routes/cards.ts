@@ -18,18 +18,62 @@ router.post("/", async (req, res) => {
     columnId: string;
     boardId: string;
   };
-  const post = await db.card.create({
-    data: {
-      name: title,
-      position: 0,
-      createdById: userId,
-      boardId: boardId,
-      columnId: columnId,
-    },
-  });
 
-  cardsChannel.notify(JSON.stringify(post));
-  res.json(post);
+  try {
+    // Create the card
+    const post = await db.card.create({
+      data: {
+        name: title,
+        position: 0,
+        createdById: userId,
+        boardId: boardId,
+        columnId: columnId,
+      },
+    });
+
+    // Get board and user info for notification
+    const [board, creator] = await Promise.all([
+      db.boards.findUnique({
+        where: { id: boardId },
+        select: { ownerId: true, name: true },
+      }),
+      db.user.findUnique({
+        where: { id: userId },
+        select: { name: true },
+      }),
+    ]);
+
+    // Create notification for board owner if someone else created the card
+    if (board && creator && board.ownerId !== userId) {
+      await db.notification.create({
+        data: {
+          title: "New Card Created",
+          content: `${creator.name} created a new card on your board ${board.name}`,
+          type: "CARD_CREATED",
+          userId: board.ownerId,
+          createdByUserId: userId,
+          boardId: boardId,
+          cardId: post.id,
+        },
+      });
+
+      // Trigger notification via pg-realtime
+      const payload = JSON.stringify({
+        action: "create",
+        userId: board.ownerId,
+      });
+      const notificationsChannel = new (require("pg-realtime").default)(
+        require("../db").poolConfig
+      ).channel("notifications");
+      notificationsChannel.notify(payload);
+    }
+
+    cardsChannel.notify(JSON.stringify(post));
+    res.json(post);
+  } catch (error) {
+    console.error("Error creating card:", error);
+    res.status(500).json({ error: "Failed to create card" });
+  }
 });
 
 router.put("/:id", async (req, res) => {
@@ -47,7 +91,7 @@ router.put("/:id", async (req, res) => {
 
   try {
     // If position and columnId are provided, handle reordering
-    if (position !== null && columnId !== null) {
+    if (position && columnId) {
       // Get the current card to check if it's moving columns
       const currentCard = await db.card.findUnique({
         where: { id },
@@ -166,7 +210,43 @@ router.put("/:id", async (req, res) => {
             }
           : undefined,
       },
+      include: {
+        createdBy: true,
+      },
     });
+
+    // Create notification for card owner if someone else updated it
+    if (updatedCard.createdById !== userId) {
+      const updater = await db.user.findUnique({
+        where: { id: userId },
+        select: { name: true },
+      });
+
+      if (updater) {
+        await db.notification.create({
+          data: {
+            title: "Card Updated",
+            content: `${updater.name} updated your card "${updatedCard.name || "Untitled"}"`,
+            type: "CARD_UPDATED",
+            userId: updatedCard.createdById,
+            createdByUserId: userId,
+            boardId: updatedCard.boardId,
+            cardId: updatedCard.id,
+          },
+        });
+
+        // Trigger notification via pg-realtime
+        const payload = JSON.stringify({
+          action: "create",
+          userId: updatedCard.createdById,
+        });
+        const notificationsChannel = new (require("pg-realtime").default)(
+          require("../db").poolConfig
+        ).channel("notifications");
+        notificationsChannel.notify(payload);
+      }
+    }
+
     cardsChannel.notify(JSON.stringify(updatedCard));
     res.json(updatedCard);
   } catch (error) {
@@ -178,7 +258,10 @@ router.put("/:id", async (req, res) => {
 // Add archive/unarchive endpoint
 router.patch("/:id/archive", async (req, res) => {
   const { id } = req.params;
-  const { archived } = req.body as { archived: boolean };
+  const { archived, userId } = req.body as {
+    archived: boolean;
+    userId: string;
+  };
 
   try {
     const updatedCard = await db.card.update({
@@ -188,6 +271,37 @@ router.patch("/:id/archive", async (req, res) => {
         archivedAt: archived ? new Date() : null,
       },
     });
+
+    if (updatedCard.createdById !== userId) {
+      const updater = await db.user.findUnique({
+        where: { id: userId },
+        select: { name: true },
+      });
+
+      if (updater) {
+        await db.notification.create({
+          data: {
+            title: `Card ${archived ? "Archived" : "Restored"}`,
+            content: `${updater.name} ${archived ? "archived" : "restored"} your card "${updatedCard.name || "Untitled"}"`,
+            type: archived ? "CARD_ARCHIVED" : "CARD_RESTORED",
+            userId: updatedCard.createdById,
+            createdByUserId: userId,
+            boardId: updatedCard.boardId,
+            cardId: updatedCard.id,
+          },
+        });
+
+        // Trigger notification via pg-realtime
+        const payload = JSON.stringify({
+          action: "create",
+          userId: updatedCard.createdById,
+        });
+        const notificationsChannel = new (require("pg-realtime").default)(
+          require("../db").poolConfig
+        ).channel("notifications");
+        notificationsChannel.notify(payload);
+      }
+    }
 
     cardsChannel.notify(JSON.stringify(updatedCard));
     res.json(updatedCard);
@@ -199,8 +313,41 @@ router.patch("/:id/archive", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
+  const { userId } = req.body as {
+    userId: string;
+  };
   try {
-    await db.card.delete({ where: { id } });
+    const deletedCard = await db.card.delete({ where: { id } });
+    if (deletedCard.createdById !== userId) {
+      const updater = await db.user.findUnique({
+        where: { id: userId },
+        select: { name: true },
+      });
+
+      if (updater) {
+        await db.notification.create({
+          data: {
+            title: "Card Deleted",
+            content: `${updater.name} deleted your card "${deletedCard.name || "Untitled"}"`,
+            type: "CARD_DELETED",
+            userId: deletedCard.createdById,
+            createdByUserId: userId,
+            boardId: deletedCard.boardId,
+            cardId: null,
+          },
+        });
+
+        // Trigger notification via pg-realtime
+        const payload = JSON.stringify({
+          action: "create",
+          userId: deletedCard.createdById,
+        });
+        const notificationsChannel = new (require("pg-realtime").default)(
+          require("../db").poolConfig
+        ).channel("notifications");
+        notificationsChannel.notify(payload);
+      }
+    }
     cardsChannel.notify(JSON.stringify({ id }));
     res.json({ id });
   } catch (error) {

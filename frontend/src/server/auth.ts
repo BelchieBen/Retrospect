@@ -5,6 +5,7 @@ import {
   type NextAuthOptions,
 } from "next-auth";
 import AzureADProvider from "next-auth/providers/azure-ad";
+import GoogleProvider from "next-auth/providers/google";
 
 import { env } from "~/env";
 import { db } from "~/server/db";
@@ -41,7 +42,7 @@ export const authOptions: NextAuthOptions = {
       user: {
         ...session.user,
         id: user.id,
-        role: (user as any).role || "USER",
+        role: (user as { role: "USER" | "ADMIN" }).role || "USER",
       },
     }),
   },
@@ -58,6 +59,15 @@ export const authOptions: NextAuthOptions = {
     signIn: "/auth/signin",
   },
 };
+
+if (env.NODE_ENV === "development") {
+  authOptions.providers.push(
+    GoogleProvider({
+      clientId: env.AUTH_GOOGLE_CLIENT_ID,
+      clientSecret: env.AUTH_GOOGLE_SECRET,
+    }),
+  );
+}
 
 /**
  * Wrapper for `getServerSession` so that you don't need to import the `authOptions` in every file.

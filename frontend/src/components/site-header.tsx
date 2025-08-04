@@ -1,6 +1,6 @@
 "use client";
 
-import { IBell, IQuestion, ISearch } from "~/components/Iconography/Icons";
+import { IQuestion, ISearch } from "~/components/Iconography/Icons";
 import Link from "next/link";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -9,6 +9,7 @@ import { Input } from "~/components/ui/input";
 import { ThemeToggle } from "~/app/_components/theme-toggle";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import { NotificationDropdown } from "~/components/notification-dropdown";
 import RetospectLogo from "./retospect-logo";
 
 export function SiteHeader() {
@@ -41,16 +42,7 @@ export function SiteHeader() {
         {/* Right Section - Icons and User */}
         <div className="flex items-center gap-3">
           {/* Notifications */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hover:bg-white/10 relative h-8 w-8 text-white"
-          >
-            <IBell color="white" size={20} />
-            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-              2
-            </span>
-          </Button>
+          <NotificationDropdown />
 
           {/* Help */}
           <Button

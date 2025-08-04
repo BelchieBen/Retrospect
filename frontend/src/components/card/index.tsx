@@ -17,6 +17,7 @@ import { Edit2, X, Archive, Check } from "lucide-react";
 import CardDialog from "./dialog";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useSession } from "next-auth/react";
 
 export function Card({
   card,
@@ -32,6 +33,7 @@ export function Card({
   const [cardName, setCardName] = useState(card.name ?? "");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const cardNameRef = useRef<HTMLTextAreaElement>(null);
+  const { data: session } = useSession();
 
   useEffect(() => {
     setCardName(card.name ?? "");
@@ -48,6 +50,7 @@ export function Card({
     setCardName(name);
     await axios.put(`${backendUrl}/cards/${card.id}`, {
       name,
+      userId: session?.user.id,
     });
   };
 

@@ -107,22 +107,6 @@ export function CreateBoard({ children }: CreateBoardProps) {
 
         {/* Content */}
         <div className="space-y-6 p-6">
-          {/* Background Selection */}
-          {/* <div className="space-y-3">
-            <h4 className="text-sm font-medium text-neutral100 dark:text-neutral30">
-              Background
-            </h4>
-            <div className="grid grid-cols-4 gap-3">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div
-                  key={`bg-${i}`}
-                  className="h-12 cursor-pointer rounded-lg transition-colors hover:border-teal60 dark:border-neutral60"
-                  style={{ background: getRandomGradient() }}
-                />
-              ))}
-            </div>
-          </div> */}
-
           {/* Form */}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -160,7 +144,7 @@ export function CreateBoard({ children }: CreateBoardProps) {
           </Button>
           <Button
             onClick={form.handleSubmit(onSubmit)}
-            className="bg-teal60 text-white hover:bg-teal70"
+            className="bg-teal80 text-white hover:bg-teal70"
           >
             Create Board
           </Button>

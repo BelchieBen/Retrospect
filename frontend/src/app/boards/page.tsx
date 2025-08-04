@@ -13,7 +13,6 @@ export default async function BoardsPage() {
   if (!session?.user) redirect("/auth/signin");
 
   const boards = await api.board.getBoards();
-  const dashboardStats = await api.board.getDashboardStats();
 
   const userBoards = boards?.BoardMembers ?? [];
 
@@ -32,71 +31,8 @@ export default async function BoardsPage() {
         <CreateBoard />
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-neutral20 dark:border-neutral70">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-neutral70 dark:text-neutral30">
-              Total Boards
-            </CardTitle>
-            <Users className="h-4 w-4 text-neutral60 dark:text-neutral40" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-black dark:text-white">
-              {dashboardStats.totalBoards}
-            </div>
-            <p className="text-xs text-neutral60 dark:text-neutral40">
-              Active collaboration spaces
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-neutral20 dark:border-neutral70">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-neutral70 dark:text-neutral30">
-              Team Members
-            </CardTitle>
-            <Users className="h-4 w-4 text-neutral60 dark:text-neutral40" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-black dark:text-white">
-              {dashboardStats.teamMembers}
-            </div>
-            <p className="text-xs text-neutral60 dark:text-neutral40">
-              Collaborating with you
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-neutral20 dark:border-neutral70">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-neutral70 dark:text-neutral30">
-              Recent Activity
-            </CardTitle>
-            <Calendar className="h-4 w-4 text-neutral60 dark:text-neutral40" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-black dark:text-white">
-              {dashboardStats.recentActivity}
-            </div>
-            <p className="text-xs text-neutral60 dark:text-neutral40">
-              Cards this week
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Boards Grid */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-black dark:text-white">
-            All Boards
-          </h2>
-          <p className="text-sm text-neutral60 dark:text-neutral40">
-            {userBoards.length} board{userBoards.length !== 1 ? "s" : ""}
-          </p>
-        </div>
-
         {userBoards.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {userBoards.map((boardMember) => (

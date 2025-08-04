@@ -11,6 +11,7 @@ import columnRoutes from "./routes/columns";
 import cardRoutes from "./routes/cards";
 import commentRoutes from "./routes/comments";
 import feedbackRoutes from "./routes/feedback";
+import notificationRoutes from "./routes/notifications";
 import { poolConfig } from "db";
 
 const app = express();
@@ -43,6 +44,9 @@ const commentsChannel = commentsNotifier.channel("comments");
 const feedbackNotifier = new PostgresNotifier(poolConfig);
 const feedbackChannel = feedbackNotifier.channel("feedback");
 
+const notificationsNotifier = new PostgresNotifier(poolConfig);
+const notificationsChannel = notificationsNotifier.channel("notifications");
+
 io.on("connection", (socket) => {
   socket.join("posts");
   socket.join("columns");
@@ -50,6 +54,7 @@ io.on("connection", (socket) => {
   socket.join("comments");
   socket.join("boards");
   socket.join("feedback");
+  socket.join("notifications");
   console.log("a user connected");
 
   socket.on("disconnect", () => {
@@ -87,6 +92,20 @@ feedbackChannel.subscribe((payload) => {
   io.to("feedback").emit("feedback_updated", payload);
 });
 
+notificationsChannel.subscribe((payload) => {
+  console.log("Notification channel payload:", payload);
+  const data = JSON.parse(payload ?? "{}");
+  if (data?.action === "create") {
+    // Emit to specific user room
+    io.to(`user-${data.userId}`).emit(
+      "notification_created",
+      data.notification
+    );
+    // Also emit to general notifications room for count updates
+    io.to("notifications").emit("notification_updated", payload);
+  }
+});
+
 server.listen(port, () => {
   console.log(`listening on port ${port}`);
 });
@@ -105,3 +124,4 @@ app.use("/columns", columnRoutes);
 app.use("/cards", cardRoutes);
 app.use("/comments", commentRoutes);
 app.use("/feedback", feedbackRoutes);
+app.use("/notifications", notificationRoutes);

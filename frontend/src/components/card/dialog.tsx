@@ -46,6 +46,7 @@ import giphy from "~/lib/giphy";
 import Image from "next/image";
 import CardComments from "./comments";
 import { debounce } from "lodash";
+import { useSession } from "next-auth/react";
 
 const FormSchema = z.object({
   description: z.string().optional(),
@@ -65,10 +66,15 @@ export default function CardDialog({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
   const cardNameRef = useRef<HTMLTextAreaElement>(null);
+  const { data: session } = useSession();
 
   const deleteCardMutation = useMutation({
     mutationFn: async () => {
-      await axios.delete(`${backendUrl}/cards/${card.id}`);
+      await axios.delete(`${backendUrl}/cards/${card.id}`, {
+        data: {
+          userId: session?.user.id,
+        },
+      });
     },
     onSuccess: () => {
       setShowDeleteDialog(false);
@@ -82,7 +88,10 @@ export default function CardDialog({
 
   const archiveCardMutation = useMutation({
     mutationFn: async (archived: boolean) => {
-      await axios.patch(`${backendUrl}/cards/${card.id}/archive`, { archived });
+      await axios.patch(`${backendUrl}/cards/${card.id}/archive`, {
+        archived,
+        userId: session?.user.id,
+      });
     },
     onSuccess: () => {
       toast.success(
@@ -108,7 +117,10 @@ export default function CardDialog({
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     if (!data.description) setEditDescription(false);
-    const response = await axios.put(`${backendUrl}/cards/${card.id}`, data);
+    const response = await axios.put(`${backendUrl}/cards/${card.id}`, {
+      ...data,
+      userId: session?.user.id,
+    });
     if (response.status === 200) {
       toast.success("Card updated successfully");
       setEditDescription(false);
@@ -124,6 +136,7 @@ export default function CardDialog({
   async function updateCardGif(gifUrl: string) {
     const response = await axios.put(`${backendUrl}/cards/${card.id}`, {
       gifUrl,
+      userId: session?.user.id,
     });
     if (response.status === 200) {
       toast.success("GIF updated successfully");
@@ -137,9 +150,10 @@ export default function CardDialog({
       setCardName(name);
       await axios.put(`${backendUrl}/cards/${card.id}`, {
         name,
+        userId: session?.user.id,
       });
     },
-    [card.id],
+    [card.id, session],
   );
 
   const debouncedSaveCardTitle = useMemo(
