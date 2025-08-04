@@ -1,4 +1,4 @@
-FROM node:22-bookworm-slim
+FROM public.ecr.aws/docker/library/node:22-bookworm-slim
 
 # Set the working directory
 WORKDIR /usr/src/app
