@@ -60,7 +60,11 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-if (env.NODE_ENV === "development") {
+if (
+  env.NODE_ENV === "development" &&
+  env.AUTH_GOOGLE_CLIENT_ID &&
+  env.AUTH_GOOGLE_SECRET
+) {
   authOptions.providers.push(
     GoogleProvider({
       clientId: env.AUTH_GOOGLE_CLIENT_ID,

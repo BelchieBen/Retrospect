@@ -1,15 +1,19 @@
 import { PrismaClient } from "@prisma/client";
+import { PoolConfig } from "pg";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-export const poolConfig = {
+export const poolConfig: PoolConfig = {
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false, // For AWS RDS, this is common
-  },
 };
+
+if (process.env.NODE_ENV !== "development") {
+  poolConfig.ssl = {
+    rejectUnauthorized: false,
+  };
+}
 
 export const db =
   globalForPrisma.prisma ??

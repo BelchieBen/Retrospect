@@ -11,8 +11,14 @@ export const env = createEnv({
       process.env.NODE_ENV === "production"
         ? z.string()
         : z.string().optional(),
-    AUTH_GOOGLE_CLIENT_ID: z.string(),
-    AUTH_GOOGLE_SECRET: z.string(),
+    AUTH_GOOGLE_CLIENT_ID:
+      process.env.NODE_ENV === "development"
+        ? z.string()
+        : z.string().optional(),
+    AUTH_GOOGLE_SECRET:
+      process.env.NODE_ENV === "development"
+        ? z.string()
+        : z.string().optional(),
     AZURE_AD_CLIENT_ID: z.string(),
     AZURE_AD_CLIENT_SECRET: z.string(),
     AZURE_AD_TENANT_ID: z.string(),
