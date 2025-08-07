@@ -65,10 +65,8 @@ WORKDIR /usr/src/app
 
 # Set environment variables
 ARG DATABASE_URL
-ARG NPM_PACKAGE_VERSION
 ENV DATABASE_URL=${DATABASE_URL}
 ENV NODE_ENV=production
-ENV npm_package_version=${NPM_PACKAGE_VERSION}
 
 # Copy production dependencies from dependencies stage (includes Prisma engines)
 COPY --from=dependencies /tmp/prod-deps/node_modules ./node_modules

@@ -51,7 +51,7 @@ const loggerConfigs: Record<string, LoggerConfig> = {
     base: {
       service: "retrospect-server",
       environment: "production",
-      version: process.env.npm_package_version || "unknown",
+      version: "1.0.0",
     },
   },
 
@@ -64,7 +64,7 @@ const loggerConfigs: Record<string, LoggerConfig> = {
     base: {
       service: "retrospect-server",
       environment: "staging",
-      version: process.env.npm_package_version || "unknown",
+      version: "1.0.0",
     },
   },
 };
