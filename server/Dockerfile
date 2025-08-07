@@ -15,6 +15,9 @@ RUN echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> ~/.npmrc && \
 ARG DATABASE_URL
 ENV DATABASE_URL=${DATABASE_URL}
 
+# Set NODE_ENV to production
+ENV NODE_ENV=production
+
 # Install dependencies
 RUN npm install && \
     rm ~/.npmrc
