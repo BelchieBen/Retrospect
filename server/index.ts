@@ -13,9 +13,11 @@ import commentRoutes from "./routes/comments";
 import feedbackRoutes from "./routes/feedback";
 import notificationRoutes from "./routes/notifications";
 import { poolConfig } from "db";
+import { logger, loggerUtils } from "./logger";
 
 const app = express();
 const server = http.createServer(app);
+
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -55,10 +57,10 @@ io.on("connection", (socket) => {
   socket.join("boards");
   socket.join("feedback");
   socket.join("notifications");
-  console.log("a user connected");
+  loggerUtils.socketLogger.info({ socketId: socket.id }, "User connected");
 
   socket.on("disconnect", () => {
-    console.log("user disconnected");
+    loggerUtils.socketLogger.info({ socketId: socket.id }, "User disconnected");
   });
 });
 
@@ -79,7 +81,10 @@ commentsChannel.subscribe((payload) => {
 });
 
 boardChannel.subscribe((payload) => {
-  console.log("Board channel payload:", payload);
+  loggerUtils.notificationLogger.debug(
+    { payload },
+    "Board channel payload received"
+  );
   const data = JSON.parse(payload ?? "{}");
   if (data?.action === "join") {
     io.to("boards").emit("user_joined", { userId: data.userId });
@@ -93,7 +98,10 @@ feedbackChannel.subscribe((payload) => {
 });
 
 notificationsChannel.subscribe((payload) => {
-  console.log("Notification channel payload:", payload);
+  loggerUtils.notificationLogger.debug(
+    { payload },
+    "Notification channel payload received"
+  );
   const data = JSON.parse(payload ?? "{}");
   if (data?.action === "create") {
     // Emit to specific user room
@@ -107,7 +115,10 @@ notificationsChannel.subscribe((payload) => {
 });
 
 server.listen(port, () => {
-  console.log(`listening on port ${port}`);
+  logger.info(
+    { port, environment: process.env.NODE_ENV },
+    "Server started successfully"
+  );
 });
 
 app.use(cors({ origin: "*" }));
