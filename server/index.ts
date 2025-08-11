@@ -14,9 +14,29 @@ import feedbackRoutes from "./routes/feedback";
 import notificationRoutes from "./routes/notifications";
 import { poolConfig } from "db";
 import { logger, loggerUtils } from "./logger";
+import client from "prom-client";
 
 const app = express();
 const server = http.createServer(app);
+
+// Prometheus metrics
+const register = new client.Registry();
+client.collectDefaultMetrics({ register });
+
+const requestCounter = new client.Counter({
+  name: "http_requests_total",
+  help: "Total number of HTTP requests",
+  labelNames: ["method", "endpoint", "status_code"],
+  registers: [register], // Register the counter
+});
+
+const requestDuration = new client.Histogram({
+  name: "http_request_duration_seconds",
+  help: "Duration of HTTP requests in seconds",
+  labelNames: ["method", "endpoint", "status_code"],
+  buckets: [0.1, 0.5, 1, 2, 5], // Define buckets for response times
+  registers: [register],
+});
 
 const io = new Server(server, {
   cors: {
@@ -124,8 +144,43 @@ server.listen(port, () => {
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 
+// Request logging middleware - log all incoming requests
+app.use(loggerUtils.requestLogger);
+
+// Metrics middleware - MUST be before routes to capture all requests
+app.use((req, res, next) => {
+  // Skip metrics collection for the /metrics endpoint itself
+  if (req.url === "/metrics") {
+    return next();
+  }
+
+  const start = Date.now();
+
+  // Capture response when it finishes
+  res.on("finish", () => {
+    const duration = (Date.now() - start) / 1000; // Convert to seconds
+    const endpoint = req.route?.path || req.url; // Use route path if available, fallback to URL
+
+    const labels = {
+      method: req.method,
+      endpoint: endpoint,
+      status_code: res.statusCode.toString(),
+    };
+
+    requestCounter.inc(labels);
+    requestDuration.observe(labels, duration);
+  });
+
+  next();
+});
+
 app.get("/", (req, res) => {
   res.json("Hi from backend");
+});
+
+app.get("/metrics", async (req, res) => {
+  res.set("Content-Type", register.contentType);
+  res.end(await register.metrics());
 });
 
 app.use("/posts", postsRoutes);

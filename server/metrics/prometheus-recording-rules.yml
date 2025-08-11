@@ -1,0 +1,33 @@
+groups:
+  - name: retrospect_server_rules
+    interval: 30s
+    rules:
+      # Request rate per endpoint
+      - record: retrospect:http_request_rate
+        expr: rate(http_requests_total[5m])
+        labels:
+          job: "retrospect-server"
+
+      # Average response time
+      - record: retrospect:http_avg_response_time
+        expr: rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m])
+        labels:
+          job: "retrospect-server"
+
+      # Error rate percentage
+      - record: retrospect:http_error_rate
+        expr: sum(rate(http_requests_total{status_code=~"4..|5.."}[5m])) / sum(rate(http_requests_total[5m])) * 100
+        labels:
+          job: "retrospect-server"
+
+      # 95th percentile response time
+      - record: retrospect:http_p95_response_time
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+        labels:
+          job: "retrospect-server"
+
+      # Total requests per minute
+      - record: retrospect:http_requests_per_minute
+        expr: sum(rate(http_requests_total[1m])) * 60
+        labels:
+          job: "retrospect-server"

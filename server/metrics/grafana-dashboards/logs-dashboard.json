@@ -1,0 +1,614 @@
+{
+  "id": null,
+  "title": "Retrospect Server Logs",
+  "tags": ["retrospect", "logs", "loki"],
+  "style": "dark",
+  "timezone": "browser",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Log Volume Over Time",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (level) (count_over_time({service=\"retrospect-server\"} | json | __error__=\"\" [5m]))",
+          "legendFormat": "Level {{level}}",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ERROR"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "WARN"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "yellow"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "INFO"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": 2,
+      "title": "Recent Error Logs",
+      "type": "logs",
+      "targets": [
+        {
+          "expr": "{service=\"retrospect-server\"} |~ \"(?i)error\"",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": true,
+        "wrapLogMessage": false,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      }
+    },
+    {
+      "id": 3,
+      "title": "HTTP Request Logs",
+      "type": "logs",
+      "targets": [
+        {
+          "expr": "{service=\"retrospect-server\"} |~ \"Request (started|completed)\"",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": true,
+        "wrapLogMessage": false,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      }
+    },
+    {
+      "id": 4,
+      "title": "All Application Logs",
+      "type": "logs",
+      "targets": [
+        {
+          "expr": "{service=\"retrospect-server\"}",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": true,
+        "wrapLogMessage": false,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      }
+    },
+    {
+      "id": 5,
+      "title": "Log Levels Distribution",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum by (level) (count_over_time({service=\"retrospect-server\"} | json [1h]))",
+          "legendFormat": "Level {{level}}",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        },
+        {
+          "expr": "sum(count_over_time({service=\"retrospect-server\"} |~ \"level.*30\" [1h]))",
+          "legendFormat": "INFO (Level 30)",
+          "refId": "B",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        },
+        {
+          "expr": "sum(count_over_time({service=\"retrospect-server\"} |~ \"level.*20\" [1h]))",
+          "legendFormat": "DEBUG (Level 20)",
+          "refId": "C",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        },
+        {
+          "expr": "sum(count_over_time({service=\"retrospect-server\"} |~ \"level.*40\" [1h]))",
+          "legendFormat": "WARN (Level 40)",
+          "refId": "D",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        },
+        {
+          "expr": "sum(count_over_time({service=\"retrospect-server\"} |~ \"level.*50\" [1h]))",
+          "legendFormat": "ERROR (Level 50)",
+          "refId": "E",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ERROR"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "WARN"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "yellow"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "INFO"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "DEBUG"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "pieType": "pie",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "visible",
+          "placement": "right"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 28
+      }
+    },
+    {
+      "id": 6,
+      "title": "Request Response Time (5m)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "avg(avg_over_time({service=\"retrospect-server\"} |~ \"Request completed\" | json | __error__=\"\" | duration =~ \".*ms\" | regexp `(?P<duration_num>\\d+)ms` | unwrap duration_num [5m]))",
+          "legendFormat": "Request Response Time (5m)",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1000
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 28
+      }
+    },
+    {
+      "id": 7,
+      "title": "Log Count by Type",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(count_over_time({service=\"retrospect-server\"} |~ \"Server started\" [1h]))",
+          "legendFormat": "Server Started",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        },
+        {
+          "expr": "sum(count_over_time({service=\"retrospect-server\"} |~ \"Request started\" [1h]))",
+          "legendFormat": "Requests Started",
+          "refId": "B",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        },
+        {
+          "expr": "sum(count_over_time({service=\"retrospect-server\"} |~ \"Request completed\" [1h]))",
+          "legendFormat": "Requests Completed",
+          "refId": "C",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        },
+        {
+          "expr": "sum(count_over_time({service=\"retrospect-server\"} |~ \"User connected\" [1h]))",
+          "legendFormat": "User Connections",
+          "refId": "D",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        },
+        {
+          "expr": "sum(count_over_time({service=\"retrospect-server\"} |~ \"User disconnected\" [1h]))",
+          "legendFormat": "User Disconnections",
+          "refId": "E",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        },
+        {
+          "expr": "sum(count_over_time({service=\"retrospect-server\"} |~ \"payload received\" [1h]))",
+          "legendFormat": "Notifications/Events",
+          "refId": "F",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ERROR"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "WARN"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "yellow"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "INFO"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "DEBUG"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "orientation": "horizontal",
+        "barWidth": 0.6,
+        "showValue": "auto",
+        "groupWidth": 0.7,
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "visible",
+          "placement": "bottom"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 28
+      }
+    }
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "10s",
+  "schemaVersion": 30,
+  "version": 1
+}

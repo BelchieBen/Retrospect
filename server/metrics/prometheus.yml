@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Load recording rules
+rule_files:
+  - "prometheus-recording-rules.yml"
+
+scrape_configs:
+  - job_name: "retrospect-server"
+    static_configs:
+      - targets: ["host.docker.internal:8000"]
+    scrape_interval: 5s
+    metrics_path: /metrics
+
+  # Add default queries as comments for easy access
+  # Useful queries:
+  # - Total requests: sum(http_requests_total)
+  # - Request rate: rate(http_requests_total[5m])
+  # - Average response time: rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m])
+  # - 95th percentile: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+  # - Error rate: sum(rate(http_requests_total{status_code=~"4..|5.."}[5m])) / sum(rate(http_requests_total[5m])) * 100

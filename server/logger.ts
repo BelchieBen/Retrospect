@@ -2,7 +2,7 @@ import pino from "pino";
 
 interface LoggerConfig {
   level: pino.Level;
-  transport?: pino.TransportSingleOptions;
+  transport?: pino.TransportSingleOptions | pino.TransportMultiOptions;
   formatters?: Record<string, any>;
   timestamp?: boolean | (() => string);
   base?: Record<string, any>;
@@ -13,18 +13,33 @@ const loggerConfigs: Record<string, LoggerConfig> = {
   development: {
     level: "debug",
     transport: {
-      target: "pino-pretty",
-      options: {
-        destination: 1,
-        colorize: true,
-        translateTime: "HH:MM:ss Z",
-        ignore: "pid,hostname",
-        messageFormat: "\x1b[36m[{level}]\x1b[0m {msg}",
-      },
+      targets: [
+        {
+          target: "pino-pretty",
+          level: "debug",
+          options: {
+            destination: 1,
+            colorize: true,
+            translateTime: "HH:MM:ss Z",
+            ignore: "pid,hostname",
+            messageFormat: "\x1b[36m[{level}]\x1b[0m {msg}",
+          },
+        },
+        {
+          target: "pino/file",
+          level: "debug",
+          options: {
+            destination: "./logs/server.log",
+            mkdir: true,
+          },
+        },
+      ],
     },
     timestamp: pino.stdTimeFunctions.isoTime,
     base: {
       service: "retrospect-server",
+      environment: "development",
+      version: process.env.npm_package_version || "unknown",
     },
   },
 
@@ -116,6 +131,10 @@ interface RequestWithLogger extends Express.Request {
 export const loggerUtils = {
   // Request logging middleware
   requestLogger: (req: any, res: any, next: any) => {
+    if (req.url === "/metrics") {
+      return next();
+    }
+
     const start = Date.now();
     const requestId = Math.random().toString(36).substring(7);
 
