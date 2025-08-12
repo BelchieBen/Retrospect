@@ -13,11 +13,13 @@ import axios from "axios";
 import { debounce } from "lodash";
 import { Button } from "~/components/ui/button";
 import { Dialog, DialogTrigger } from "~/components/ui/dialog";
-import { Edit2, X, Archive, Check } from "lucide-react";
+import { X, Archive, Check } from "lucide-react";
 import CardDialog from "./dialog";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useSession } from "next-auth/react";
+import { ICross, IPencil } from "../Iconography/Icons";
+import { useQueryClient } from "react-query";
 
 export function Card({
   card,
@@ -34,6 +36,7 @@ export function Card({
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const cardNameRef = useRef<HTMLTextAreaElement>(null);
   const { data: session } = useSession();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     setCardName(card.name ?? "");
@@ -52,9 +55,10 @@ export function Card({
       name,
       userId: session?.user.id,
     });
+    void queryClient.invalidateQueries({ queryKey: ["columns"] });
   };
 
-  const debouncedSaveColumnTitle = useCallback(
+  const debouncedSaveCardTitle = useCallback(
     debounce((name: string) => saveCardName(name), 500),
     [card.id],
   );
@@ -63,7 +67,7 @@ export function Card({
     setCardName(e.target.value);
     e.target.style.height = "auto";
     e.target.style.height = `${e.target.scrollHeight}px`;
-    void debouncedSaveColumnTitle(e.target.value);
+    void debouncedSaveCardTitle(e.target.value);
   };
 
   if (card.gifUrl)
@@ -86,7 +90,6 @@ export function Card({
                     className="absolute right-0 top-0 m-2 rounded-full bg-secondary p-1 shadow-md"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Add your button click logic here
                       setIsEditingTitle(!isEditingTitle);
                       if (!isEditingTitle) {
                         setTimeout(() => {
@@ -102,12 +105,12 @@ export function Card({
                       }
                     }}
                   >
-                    <Edit2 className="h-4 w-4" />
+                    <IPencil size={16} />
                   </button>
                 </div>
 
-                <div className="flex w-full items-center justify-between">
-                  <p className="text-wrap text-start text-base font-normal">
+                <div className="flex w-full items-center justify-between gap-2">
+                  <p className="line-clamp-2 overflow-ellipsis break-words text-start text-base font-normal">
                     {cardName}
                   </p>
                   <Avatar className="h-6 w-6">
@@ -121,7 +124,7 @@ export function Card({
               </div>
             </DialogTrigger>
           ) : (
-            <div className="m-1 flex h-fit w-full flex-col items-start justify-start gap-2 rounded-sm p-2">
+            <div className="flex h-fit w-full flex-col items-start justify-start gap-4 rounded-sm p-2">
               <div className="relative h-32 w-full">
                 <Image src={card.gifUrl} fill alt={"GIF"} />
                 <button
@@ -132,29 +135,31 @@ export function Card({
                     setIsEditingTitle(!isEditingTitle);
                   }}
                 >
-                  <X className="h-4 w-4 text-white" />
+                  <ICross size={16} />
                 </button>
               </div>
-              <textarea
-                className="w-full resize-none rounded-sm bg-transparent px-2 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
-                ref={cardNameRef}
-                value={cardName}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setIsEditingTitle(false);
-                  }
-                }}
-                onChange={handleChange}
-                rows={1}
-              />
-              <div className="flex w-full items-end justify-end">
-                <Avatar className="h-6 w-6">
-                  <AvatarImage
-                    src={card.createdBy.image ?? ""}
-                    alt={card.createdBy.name ?? ""}
-                  />
-                  <AvatarFallback>BB</AvatarFallback>
-                </Avatar>
+              <div className="flex w-full items-center justify-between gap-2">
+                <textarea
+                  className="flex-2 w-full resize-none rounded-sm bg-transparent px-2 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+                  ref={cardNameRef}
+                  value={cardName}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setIsEditingTitle(false);
+                    }
+                  }}
+                  onChange={handleChange}
+                  rows={1}
+                />
+                <div className="flex w-full flex-1 items-end justify-end">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage
+                      src={card.createdBy.image ?? ""}
+                      alt={card.createdBy.name ?? ""}
+                    />
+                    <AvatarFallback>BB</AvatarFallback>
+                  </Avatar>
+                </div>
               </div>
             </div>
           )}
@@ -166,24 +171,26 @@ export function Card({
 
   return (
     <div
-      className={`flex h-11 items-center justify-between rounded-lg border-2 border-neutral10 bg-white ${card.archived ? "opacity-60" : ""}`}
+      className={`flex items-center justify-between rounded-lg border-2 border-neutral10 bg-white ${card.archived ? "opacity-60" : ""}`}
     >
       <Dialog>
         {!isEditingTitle ? (
           <DialogTrigger asChild>
             <Button
               variant="ghost"
-              className={`m-1 flex h-9 w-full items-center justify-start rounded-sm bg-transparent px-2 hover:bg-secondary ${card.archived ? "border-2 border-dashed border-gray-400" : ""}`}
+              className={`m-1 flex h-9 w-full items-center justify-start text-ellipsis rounded-sm bg-transparent px-2 hover:bg-secondary ${card.archived ? "border-2 border-dashed border-gray-400" : ""}`}
             >
               <div className="flex items-center gap-2 rounded-md">
                 {card.archived && <Archive className="h-4 w-4 text-gray-500" />}
-                <p className="text-base font-normal">{cardName}</p>
+                <p className="line-clamp-1 overflow-ellipsis text-wrap text-start text-base font-normal">
+                  {cardName}
+                </p>
               </div>
             </Button>
           </DialogTrigger>
         ) : (
           <textarea
-            className="m-1 w-full resize-none rounded-sm bg-transparent px-2 focus-visible:bg-transparent focus-visible:outline-none"
+            className="m-0.5 w-full resize-none rounded-sm bg-transparent p-2 focus-visible:bg-transparent focus-visible:outline-none"
             ref={cardNameRef}
             value={cardName}
             onKeyDown={(e) => {
@@ -214,7 +221,7 @@ export function Card({
           }
         }}
       >
-        {!isEditingTitle ? <Edit2 /> : <Check />}
+        {!isEditingTitle ? <IPencil /> : <Check />}
       </Button>
     </div>
   );

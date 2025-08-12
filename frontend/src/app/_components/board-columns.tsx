@@ -306,12 +306,7 @@ export default function BoardColumns({
           id: string;
           userId: string;
         };
-        console.log(
-          "Received column update payload:",
-          payloadData.userId,
-          " SESSION USER ID:",
-          session.data?.user.id,
-        );
+
         if (session.data?.user.id !== payloadData.userId) {
           await refetch();
         }

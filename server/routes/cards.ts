@@ -20,11 +20,24 @@ router.post("/", async (req, res) => {
   };
 
   try {
+    // Find the highest position in the target column to add card at the end
+    const lastCard = await db.card.findFirst({
+      where: {
+        columnId: columnId,
+        archived: false, // Only consider non-archived cards
+      },
+      orderBy: { position: "desc" },
+      select: { position: true },
+    });
+
+    // Set position to be after the last card, or 0 if column is empty
+    const newPosition = lastCard ? lastCard.position + 1 : 0;
+
     // Create the card
     const post = await db.card.create({
       data: {
         name: title,
-        position: 0,
+        position: newPosition,
         createdById: userId,
         boardId: boardId,
         columnId: columnId,
@@ -247,7 +260,7 @@ router.put("/:id", async (req, res) => {
       }
     }
 
-    cardsChannel.notify(JSON.stringify(updatedCard));
+    cardsChannel.notify(JSON.stringify({ ...updatedCard, userId }));
     res.json(updatedCard);
   } catch (error) {
     console.error("Error updating card:", error);

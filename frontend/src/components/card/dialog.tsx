@@ -20,12 +20,13 @@ import { type Prisma } from "@prisma/client";
 import React, {
   type ChangeEvent,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
-import { useMutation } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import { Input } from "~/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -63,10 +64,15 @@ export default function CardDialog({
   const [cardName, setCardName] = useState(card.name ?? "");
   const [giphySearchTerm, setGiphySearchTerm] = useState("");
   const [gifUrl, setGifUrl] = useState(card.gifUrl ?? "");
+  const queryClient = useQueryClient();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
   const cardNameRef = useRef<HTMLTextAreaElement>(null);
   const { data: session } = useSession();
+
+  useEffect(() => {
+    setCardName(card.name ?? "");
+  }, [card.name]);
 
   const deleteCardMutation = useMutation({
     mutationFn: async () => {
@@ -94,6 +100,8 @@ export default function CardDialog({
       });
     },
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["columns"] });
+
       toast.success(
         card.archived
           ? "Card unarchived successfully"
@@ -122,6 +130,7 @@ export default function CardDialog({
       userId: session?.user.id,
     });
     if (response.status === 200) {
+      void queryClient.invalidateQueries({ queryKey: ["columns"] });
       toast.success("Card updated successfully");
       setEditDescription(false);
     } else {
@@ -139,6 +148,7 @@ export default function CardDialog({
       userId: session?.user.id,
     });
     if (response.status === 200) {
+      void queryClient.invalidateQueries({ queryKey: ["columns"] });
       toast.success("GIF updated successfully");
     } else {
       toast.error("Failed to upload GIF");
@@ -152,6 +162,7 @@ export default function CardDialog({
         name,
         userId: session?.user.id,
       });
+      void queryClient.invalidateQueries({ queryKey: ["columns"] });
     },
     [card.id, session],
   );

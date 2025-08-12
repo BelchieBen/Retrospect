@@ -2,13 +2,7 @@
 import { type Prisma } from "@prisma/client";
 import axios from "axios";
 import { Ellipsis, Plus } from "lucide-react";
-import {
-  type ChangeEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { type ChangeEvent, useEffect, useMemo, useState } from "react";
 import { useMutation } from "react-query";
 import { Button } from "~/components/ui/button";
 import {
@@ -29,7 +23,6 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { backendUrl } from "~/constants/backendUrl";
-import debounce from "lodash/debounce";
 import { useSession } from "next-auth/react";
 import { Card } from "~/components/card";
 import { useDroppable, useDndContext } from "@dnd-kit/core";
@@ -39,7 +32,6 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Input } from "~/components/ui/input";
 
 function DraggableCard({
   card,
