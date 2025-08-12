@@ -45,7 +45,7 @@ export const templates = [
     name: "Brainstorming Session",
     description: "Collect ideas and organize thoughts collaboratively",
     color: "orange",
-    image: "💡",
+    image: "/learners.svg",
     category: "Creative",
     columns: [
       { name: "Ideas", position: 1 },

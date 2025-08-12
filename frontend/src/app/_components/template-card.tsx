@@ -36,7 +36,7 @@ interface TemplateCardProps {
 
 export function TemplateCard({ template }: TemplateCardProps) {
   const [open, setOpen] = useState(false);
-  const [boardName, setBoardName] = useState(`${template.name} Board`);
+  const [boardName, setBoardName] = useState(`${template.name}`);
   const [isCreating, setIsCreating] = useState(false);
   const router = useRouter();
   const utils = api.useUtils();
@@ -98,8 +98,10 @@ export function TemplateCard({ template }: TemplateCardProps) {
         </div>
         <div className="mt-2 flex items-center justify-between">
           <div className="mt-2 flex items-center gap-2">
-            <span className="rounded-full bg-teal10 px-2 py-1 text-xs text-teal70 dark:bg-teal20 dark:text-teal60">
-              Template
+            <span
+              className={`rounded-full bg-${template.color}10 px-2 py-1 text-xs text-${template.color}70 dark:bg-${template.color}20 dark:text-${template.color}60`}
+            >
+              {template.category}
             </span>
             <span className="text-xs text-neutral50 dark:text-neutral50">
               Popular

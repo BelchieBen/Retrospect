@@ -1,6 +1,7 @@
 import {
   IBookmarkOutline,
   ICog,
+  IFileText,
   IPaperPlane,
   IQuestion,
   IUsers,
@@ -17,6 +18,12 @@ export const SidebarElements = {
       title: "Boards",
       url: "/boards",
       icon: <IBookmarkOutline />,
+      isActive: true,
+    },
+    {
+      title: "Templates",
+      url: "/templates",
+      icon: <IFileText />,
       isActive: true,
     },
     {
