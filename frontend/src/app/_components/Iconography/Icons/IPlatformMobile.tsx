@@ -1,0 +1,32 @@
+import HelixPalette from "~/styles/palette";
+
+export const IPlatformMobile = ({
+  color = HelixPalette.neutral90,
+  dataId,
+  size = 24,
+  style,
+}: {
+  color?: string;
+  dataId?: string;
+  size?: number;
+  style?: React.CSSProperties;
+}) => {
+  return (
+    <svg
+      data-id={dataId}
+      fill={color}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      style={style}
+    >
+      <path
+        d="M5 4C5 2.89543 5.89543 2 7 2H17C18.1046 2 19 2.89543 19 4V20C19 21.1046 18.1046 22 17 22H7C5.89543 22 5 21.1046 5 20V4ZM7 5C7 4.44772 7.44772 4 8 4H16C16.5523 4 17 4.44772 17 5V16H7V5ZM17 18H7V19C7 19.5523 7.44772 20 8 20H16C16.5523 20 17 19.5523 17 19V18Z"
+        clipRule="evenodd"
+        fillRule="evenodd"
+      ></path>
+    </svg>
+  );
+};
+
+export default IPlatformMobile;

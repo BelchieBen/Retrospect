@@ -1,6 +1,6 @@
 import axios from "axios";
 import { redirect } from "next/navigation";
-import BoardColumns from "~/app/_components/board-columns";
+import BoardColumns from "./_components/board-columns";
 import { backendUrl } from "~/constants/backendUrl";
 import { getServerAuthSession } from "~/server/auth";
 import { api } from "~/trpc/server";

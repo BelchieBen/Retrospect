@@ -1,0 +1,37 @@
+import HelixPalette from "~/styles/palette";
+
+export const ISystemSettings = ({
+  color = HelixPalette.neutral90,
+  dataId,
+  size = 24,
+  style,
+}: {
+  color?: string;
+  dataId?: string;
+  size?: number;
+  style?: React.CSSProperties;
+}) => {
+  return (
+    <svg
+      data-id={dataId}
+      fill={color}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      style={style}
+    >
+      <path
+        d="M15 3C13.1362 3 11.5701 4.27477 11.126 6L3 6C2.44772 6 2 6.44771 2 7C2 7.55228 2.44772 8 3 8L11.126 8C11.5701 9.72523 13.1362 11 15 11C16.8638 11 18.4299 9.72523 18.874 8L21 8C21.5523 8 22 7.55228 22 7C22 6.44772 21.5523 6 21 6L18.874 6C18.4299 4.27477 16.8638 3 15 3ZM15 5C13.8954 5 13 5.89543 13 7C13 8.10457 13.8954 9 15 9C16.1046 9 17 8.10457 17 7C17 5.89543 16.1046 5 15 5Z"
+        clipRule="evenodd"
+        fillRule="evenodd"
+      ></path>
+      <path
+        d="M9 21C10.8639 21 12.43 19.7252 12.874 18H21C21.5523 18 22 17.5523 22 17C22 16.4477 21.5523 16 21 16H12.874C12.43 14.2748 10.8639 13 9 13C7.13609 13 5.57004 14.2748 5.12601 16H3C2.44772 16 2 16.4477 2 17C2 17.5523 2.44772 18 3 18H5.12601C5.57004 19.7252 7.13609 21 9 21ZM9 19C10.1045 19 11 18.1046 11 17C11 15.8954 10.1045 15 9 15C7.89551 15 7 15.8954 7 17C7 18.1046 7.89551 19 9 19Z"
+        clipRule="evenodd"
+        fillRule="evenodd"
+      ></path>
+    </svg>
+  );
+};
+
+export default ISystemSettings;

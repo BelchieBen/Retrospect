@@ -1,4 +1,4 @@
-import HelixPalette from "../../../styles/palette";
+import HelixPalette from "~/styles/palette";
 
 export const {{NAME}} = ({
   color = HelixPalette.neutral90,

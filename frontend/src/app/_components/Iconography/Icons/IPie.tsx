@@ -1,0 +1,37 @@
+import HelixPalette from "~/styles/palette";
+
+export const IPie = ({
+  color = HelixPalette.neutral90,
+  dataId,
+  size = 24,
+  style,
+}: {
+  color?: string;
+  dataId?: string;
+  size?: number;
+  style?: React.CSSProperties;
+}) => {
+  return (
+    <svg
+      data-id={dataId}
+      fill={color}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      style={style}
+    >
+      <path
+        d="M12.0059 2.01074V11.9531H21.0908C20.8533 16.9897 16.673 21.001 11.5508 21.001C6.27617 21.001 2.00022 16.7475 2 11.501C2 6.25427 6.27604 2.00098 11.5508 2.00098C11.7032 2.00098 11.8552 2.00372 12.0059 2.01074ZM10.1865 3.92871C6.56729 4.56969 3.81944 7.71584 3.81934 11.5C3.81934 15.7473 7.28081 19.1904 11.5508 19.1904C15.0292 19.1904 17.9711 16.9058 18.9424 13.7627H10.1865V3.92871Z"
+        clipRule="evenodd"
+        fillRule="evenodd"
+      ></path>
+      <path
+        d="M12.915 2C17.8274 2.22988 21.7691 6.15157 21.999 11.0381H12.915V2ZM14.7236 9.23828H19.2812C19.1657 6.78671 17.1882 4.8196 14.7236 4.7041V9.23828Z"
+        clipRule="evenodd"
+        fillRule="evenodd"
+      ></path>
+    </svg>
+  );
+};
+
+export default IPie;

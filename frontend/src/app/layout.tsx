@@ -7,8 +7,8 @@ import Providers from "./client-providers";
 import { getServerAuthSession } from "~/server/auth";
 import { ThemeProvider } from "./theme-provider";
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
-import { SiteHeader } from "~/components/site-header";
-import { AppSidebar } from "~/components/app-sidebar";
+import { SiteHeader } from "./_components/navigation/site-header";
+import { AppSidebar } from "./_components/navigation/side-nav/app-sidebar";
 import { Toaster } from "~/components/ui/sonner";
 
 export const metadata: Metadata = {

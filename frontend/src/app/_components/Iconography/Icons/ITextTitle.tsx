@@ -1,0 +1,37 @@
+import HelixPalette from "~/styles/palette";
+
+export const ITextTitle = ({
+  color = HelixPalette.neutral90,
+  dataId,
+  size = 24,
+  style,
+}: {
+  color?: string;
+  dataId?: string;
+  size?: number;
+  style?: React.CSSProperties;
+}) => {
+  return (
+    <svg
+      data-id={dataId}
+      fill={color}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      style={style}
+    >
+      <path
+        d="M11.263 15.1553L12.164 18.0003H15L10.601 6.00031H7.383L3 18.0003H5.837L6.737 15.1553H11.263ZM9.23 8.65631C9.334 8.99531 9.803 10.4523 10.635 13.0303H7.399C8.282 10.2783 8.818 8.55331 9.005 7.85531C9.05 8.05131 9.124 8.31931 9.23 8.65631Z"
+        clipRule="evenodd"
+        fillRule="evenodd"
+      ></path>
+      <path
+        d="M19.1315 13.5781L19.5825 15.0001H21.0005L18.8005 9.00009H17.1915L15.0005 15.0001H16.4185L16.8685 13.5781H19.1315ZM18.1145 10.3281C18.1675 10.4971 18.4015 11.2261 18.8175 12.5151H17.1995C17.6415 11.1391 17.9095 10.2771 18.0025 9.92809C18.0245 10.0261 18.0625 10.1601 18.1145 10.3281Z"
+        clipRule="evenodd"
+        fillRule="evenodd"
+      ></path>
+    </svg>
+  );
+};
+
+export default ITextTitle;

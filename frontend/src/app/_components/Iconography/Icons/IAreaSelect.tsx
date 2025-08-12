@@ -1,0 +1,51 @@
+import HelixPalette from "~/styles/palette";
+
+export const IAreaSelect = ({
+  color = HelixPalette.neutral90,
+  dataId,
+  size = 24,
+  style,
+}: {
+  color?: string;
+  dataId?: string;
+  size?: number;
+  style?: React.CSSProperties;
+}) => {
+  return (
+    <svg
+      data-id={dataId}
+      fill={color}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      style={style}
+    >
+      <path
+        d="M4.5 3H7.5C8.328 3 9 3.672 9 4.5V7.5C9 8.328 8.328 9 7.5 9H4.5C3.672 9 3 8.328 3 7.5V4.5C3 3.672 3.672 3 4.5 3ZM7.5 7.5H4.5V4.5H7.5V7.5Z"
+        clipRule="evenodd"
+        fillRule="evenodd"
+      ></path>
+      <path
+        d="M16.5 3H19.5C20.328 3 21 3.672 21 4.5V7.5C21 8.328 20.328 9 19.5 9H16.5C15.672 9 15 8.328 15 7.5V4.5C15 3.672 15.672 3 16.5 3ZM19.5 7.5H16.5V4.5H19.5V7.5Z"
+        clipRule="evenodd"
+        fillRule="evenodd"
+      ></path>
+      <path
+        d="M7.5 15H4.5C3.672 15 3 15.672 3 16.5V19.5C3 20.328 3.672 21 4.5 21H7.5C8.328 21 9 20.328 9 19.5V16.5C9 15.672 8.328 15 7.5 15ZM4.5 19.5H7.5V16.5H4.5V19.5Z"
+        clipRule="evenodd"
+        fillRule="evenodd"
+      ></path>
+      <path
+        d="M16.5 15H19.5C20.328 15 21 15.672 21 16.5V19.5C21 20.328 20.328 21 19.5 21H16.5C15.672 21 15 20.328 15 19.5V16.5C15 15.672 15.672 15 16.5 15ZM19.5 19.5H16.5V16.5H19.5V19.5Z"
+        clipRule="evenodd"
+        fillRule="evenodd"
+      ></path>
+      <path d="M10 17H14V19H10V17Z"></path>
+      <path d="M7 14L7 10H5L5 14H7Z"></path>
+      <path d="M10 5H14V7H10V5Z"></path>
+      <path d="M19 14V10H17V14H19Z"></path>
+    </svg>
+  );
+};
+
+export default IAreaSelect;

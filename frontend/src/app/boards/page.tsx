@@ -1,11 +1,10 @@
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "~/server/auth";
 import { api } from "~/trpc/server";
-import { Plus, Users, Calendar, ArrowRight } from "lucide-react";
+import { Plus, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { CreateBoard } from "~/components/create-board";
+import { Card, CardContent } from "~/components/ui/card";
+import { CreateBoard } from "~/app/_components/create-board";
 import { Badge } from "~/components/ui/badge";
 
 export default async function BoardsPage() {

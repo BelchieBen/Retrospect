@@ -1,0 +1,29 @@
+import HelixPalette from "~/styles/palette";
+
+export const IQuoteOpen = ({
+  color = HelixPalette.neutral90,
+  dataId,
+  size = 24,
+  style,
+}: {
+  color?: string;
+  dataId?: string;
+  size?: number;
+  style?: React.CSSProperties;
+}) => {
+  return (
+    <svg
+      data-id={dataId}
+      fill={color}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      style={style}
+    >
+      <path d="M9.99951 6.634C8.34551 8.015 7.30651 9.902 7.30651 12H10.9995V18H4.99951V12C4.99951 9.231 6.42451 6.745 8.69251 5L9.99951 6.634Z"></path>
+      <path d="M17.9995 6.634C16.3455 8.015 15.3065 9.902 15.3065 12H18.9995V18H12.9995V12C12.9995 9.231 14.4245 6.745 16.6925 5L17.9995 6.634Z"></path>
+    </svg>
+  );
+};
+
+export default IQuoteOpen;

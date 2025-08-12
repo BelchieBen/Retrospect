@@ -1,0 +1,29 @@
+import HelixPalette from "~/styles/palette";
+
+export const ITop = ({
+  color = HelixPalette.neutral90,
+  dataId,
+  size = 24,
+  style,
+}: {
+  color?: string;
+  dataId?: string;
+  size?: number;
+  style?: React.CSSProperties;
+}) => {
+  return (
+    <svg
+      data-id={dataId}
+      fill={color}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      style={style}
+    >
+      <path d="M11.3867 11.21C11.779 10.9049 12.3465 10.9325 12.707 11.293L16.707 15.293L16.79 15.3867C17.0951 15.779 17.0675 16.3465 16.707 16.707L16.6133 16.79C16.221 17.0951 15.6535 17.0675 15.293 16.707L12 13.415L8.70703 16.707L8.61328 16.79C8.22099 17.0951 7.65345 17.0675 7.29297 16.707C6.90245 16.3165 6.90244 15.6835 7.29297 15.293L11.293 11.293L11.3867 11.21Z"></path>
+      <path d="M16 7C16.5523 7 17 7.44772 17 8C17 8.55228 16.5523 9 16 9H8C7.44772 9 7 8.55228 7 8C7 7.44772 7.44772 7 8 7H16Z"></path>
+    </svg>
+  );
+};
+
+export default ITop;

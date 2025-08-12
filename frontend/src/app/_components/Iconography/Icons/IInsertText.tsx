@@ -1,0 +1,29 @@
+import HelixPalette from "~/styles/palette";
+
+export const IInsertText = ({
+  color = HelixPalette.neutral90,
+  dataId,
+  size = 24,
+  style,
+}: {
+  color?: string;
+  dataId?: string;
+  size?: number;
+  style?: React.CSSProperties;
+}) => {
+  return (
+    <svg
+      data-id={dataId}
+      fill={color}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      style={style}
+    >
+      <path d="M4 8V6H13V8H9.5V18H7.5V8H4Z"></path>
+      <path d="M17.2001 11.7L17.2 11.7066V13.8H19.3C19.6866 13.8 20 14.1134 20 14.5C20 14.8866 19.6866 15.2 19.3 15.2L19.2943 15.2H17.2V17.3C17.2 17.6866 16.8866 18 16.5 18C16.1134 18 15.8 17.6866 15.8 17.3V15.2H13.7005C13.3139 15.2 13 14.8866 13 14.5C13 14.1134 13.3134 13.8 13.7 13.8H15.8V11.7C15.8 11.3134 16.1135 11 16.5001 11C16.8867 11 17.2001 11.3134 17.2001 11.7Z"></path>
+    </svg>
+  );
+};
+
+export default IInsertText;

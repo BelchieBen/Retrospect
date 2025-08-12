@@ -9,7 +9,7 @@ import {
   AlertTriangle,
   Lightbulb,
 } from "lucide-react";
-import { FeedbackCard } from "~/components/feedback-card";
+import { FeedbackCard } from "./_components/feedback-card";
 
 export default async function AdminFeedbackPage() {
   const session = await getServerAuthSession();

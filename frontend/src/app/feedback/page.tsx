@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "~/server/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { FeedbackForm } from "~/components/feedback-form";
+import { FeedbackForm } from "./_components/feedback-form";
 
 export default async function FeedbackPage() {
   const session = await getServerAuthSession();

@@ -4,24 +4,24 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { CreateBoard } from "~/components/create-board";
+import { CreateBoard } from "~/app/_components/create-board";
 import { templates } from "~/constants/board-templates";
-import { IInfo } from "~/components/Iconography/Icons/IInfo";
-import { ICalendar } from "~/components/Iconography/Icons/ICalendar";
-import { IDashboard } from "~/components/Iconography/Icons/IDashboard";
-import { IEditText } from "~/components/Iconography/Icons/IEditText";
-import { IApproved } from "~/components/Iconography/Icons/IApproved";
-import { IHome } from "~/components/Iconography/Icons/IHome";
-import HelixPalette from "~/styles/palette";
 import {
+  IInfo,
+  ICalendar,
+  IDashboard,
+  IEditText,
+  IApproved,
+  IHome,
   IArrowRight,
   IConjoinedLine,
   IFileText,
   IPlus,
   ITick2,
   IUsers,
-} from "~/components/Iconography/Icons";
-import { TemplateCard } from "~/components/template-card";
+} from "~/icons";
+import HelixPalette from "~/styles/palette";
+import { TemplateCard } from "~/app/_components/template-card";
 
 export default async function Home() {
   const session = await getServerAuthSession();

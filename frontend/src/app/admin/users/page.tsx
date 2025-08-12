@@ -4,7 +4,7 @@ import { api } from "~/trpc/server";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Users, Shield, UserCheck, UserPlus } from "lucide-react";
-import { UserSearch } from "~/components/user-search";
+import { UserSearch } from "./_components/user-search";
 
 export default async function AdminUsersPage() {
   const session = await getServerAuthSession();

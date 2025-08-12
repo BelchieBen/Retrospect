@@ -1,0 +1,33 @@
+import HelixPalette from "~/styles/palette";
+
+export const IScatter = ({
+  color = HelixPalette.neutral90,
+  dataId,
+  size = 24,
+  style,
+}: {
+  color?: string;
+  dataId?: string;
+  size?: number;
+  style?: React.CSSProperties;
+}) => {
+  return (
+    <svg
+      data-id={dataId}
+      fill={color}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      style={style}
+    >
+      <path d="M5 19H21V21H3V3H5V19Z"></path>
+      <path d="M14.5 14C15.3284 14 16 14.6716 16 15.5C16 16.3284 15.3284 17 14.5 17C13.6716 17 13 16.3284 13 15.5C13 14.6716 13.6716 14 14.5 14Z"></path>
+      <path d="M19.5 11C20.3284 11 21 11.6716 21 12.5C21 13.3284 20.3284 14 19.5 14C18.6716 14 18 13.3284 18 12.5C18 11.6716 18.6716 11 19.5 11Z"></path>
+      <path d="M9.5 10C10.3284 10 11 10.6716 11 11.5C11 12.3284 10.3284 13 9.5 13C8.67157 13 8 12.3284 8 11.5C8 10.6716 8.67157 10 9.5 10Z"></path>
+      <path d="M15.5 5C16.3284 5 17 5.67157 17 6.5C17 7.32843 16.3284 8 15.5 8C14.6716 8 14 7.32843 14 6.5C14 5.67157 14.6716 5 15.5 5Z"></path>
+      <path d="M8.5 4C9.32843 4 10 4.67157 10 5.5C10 6.32843 9.32843 7 8.5 7C7.67157 7 7 6.32843 7 5.5C7 4.67157 7.67157 4 8.5 4Z"></path>
+    </svg>
+  );
+};
+
+export default IScatter;

@@ -1,0 +1,30 @@
+import HelixPalette from "~/styles/palette";
+
+export const IPreferences = ({
+  color = HelixPalette.neutral90,
+  dataId,
+  size = 24,
+  style,
+}: {
+  color?: string;
+  dataId?: string;
+  size?: number;
+  style?: React.CSSProperties;
+}) => {
+  return (
+    <svg
+      data-id={dataId}
+      fill={color}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      style={style}
+    >
+      <path d="M14 5C14 6.104 13.104 7 12 7C10.896 7 10 6.104 10 5C10 3.896 10.896 3 12 3C13.104 3 14 3.896 14 5Z"></path>
+      <path d="M14 12C14 13.104 13.104 14 12 14C10.896 14 10 13.104 10 12C10 10.896 10.896 10 12 10C13.104 10 14 10.896 14 12Z"></path>
+      <path d="M12 21C13.104 21 14 20.104 14 19C14 17.896 13.104 17 12 17C10.896 17 10 17.896 10 19C10 20.104 10.896 21 12 21Z"></path>
+    </svg>
+  );
+};
+
+export default IPreferences;

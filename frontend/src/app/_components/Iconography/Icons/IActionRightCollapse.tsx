@@ -1,0 +1,29 @@
+import HelixPalette from "~/styles/palette";
+
+export const IActionRightCollapse = ({
+  color = HelixPalette.neutral90,
+  dataId,
+  size = 24,
+  style,
+}: {
+  color?: string;
+  dataId?: string;
+  size?: number;
+  style?: React.CSSProperties;
+}) => {
+  return (
+    <svg
+      data-id={dataId}
+      fill={color}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      style={style}
+    >
+      <path d="M19 6C19.5523 6 20 6.44772 20 7V17C20 17.5523 19.5523 18 19 18C18.4477 18 18 17.5523 18 17V7C18 6.44772 18.4477 6 19 6Z"></path>
+      <path d="M10.5371 7.29297C10.8822 6.93263 11.4253 6.90498 11.8008 7.20996L11.8906 7.29297L15.7197 11.293L15.7988 11.3867C16.0665 11.7463 16.0665 12.2537 15.7988 12.6133L15.7197 12.707L11.8906 16.707L11.8008 16.79C11.4565 17.0696 10.9712 17.0696 10.627 16.79L10.5371 16.707L10.457 16.6133C10.1894 16.2537 10.1894 15.7463 10.457 15.3867L10.5371 15.293L12.7295 13.001L4.95703 13C4.42845 12.9999 4 12.5522 4 12C4 11.4872 4.36961 11.0646 4.8457 11.0068L4.95703 11L12.7314 11.001L10.5371 8.70703L10.457 8.61328C10.165 8.22099 10.192 7.65345 10.5371 7.29297Z"></path>
+    </svg>
+  );
+};
+
+export default IActionRightCollapse;

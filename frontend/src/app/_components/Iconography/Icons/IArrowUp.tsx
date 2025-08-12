@@ -1,0 +1,28 @@
+import HelixPalette from "~/styles/palette";
+
+export const IArrowUp = ({
+  color = HelixPalette.neutral90,
+  dataId,
+  size = 24,
+  style,
+}: {
+  color?: string;
+  dataId?: string;
+  size?: number;
+  style?: React.CSSProperties;
+}) => {
+  return (
+    <svg
+      data-id={dataId}
+      fill={color}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      style={style}
+    >
+      <path d="M15.8323 7.50958C16.0762 7.82338 16.0541 8.27687 15.7659 8.56525L15.6907 8.63165C15.3769 8.87548 14.9233 8.85347 14.635 8.56525L13.0002 6.93146L13.0002 18.9998L12.9954 19.1024C12.944 19.6065 12.5179 19.9998 12.0002 19.9998C11.448 19.9998 11.0002 19.5521 11.0002 18.9998L11.0002 6.93146L9.36547 8.56525L9.29028 8.63165C8.97646 8.8755 8.52294 8.85356 8.23461 8.56525C7.92239 8.25291 7.92251 7.74679 8.23461 7.43439L11.4348 4.23419L11.51 4.16778C11.8238 3.92379 12.2773 3.9459 12.5657 4.23419L15.7659 7.43439L15.8323 7.50958Z"></path>
+    </svg>
+  );
+};
+
+export default IArrowUp;
