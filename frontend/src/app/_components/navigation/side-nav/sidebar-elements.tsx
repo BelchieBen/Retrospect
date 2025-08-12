@@ -32,7 +32,6 @@ export const SidebarElements = {
       icon: <IUsers />,
       isActive: true,
     },
-
     {
       title: "Workspace Settings",
       url: "/",

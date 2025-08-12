@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { NavMain } from "./nav-main";
-import { NavProjects } from "./nav-workspace";
+import { NavProjects } from "./nav-boards";
 import { NavSecondary } from "./nav-secondary";
 import { NavAdmin } from "./nav-admin";
 import { NavUser } from "./nav-user";
