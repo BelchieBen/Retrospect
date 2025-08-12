@@ -281,7 +281,9 @@ export function NotificationDropdown() {
                 width={96}
                 alt="news"
               />
-              <p className="text-sm text-neutral80">Your all caught up!</p>
+              <p className="text-sm text-neutral80">
+                You&apos;re all caught up!
+              </p>
             </div>
           ) : (
             notifications?.map((notification) => (

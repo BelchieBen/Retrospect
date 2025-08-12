@@ -53,7 +53,8 @@ export function SiteHeader() {
             <IQuestion color="white" size={20} />
           </Button>
 
-          <ThemeToggle />
+          {/* TODO: Need to create a dark mode theme */}
+          {/* <ThemeToggle /> */}
 
           {/* User Avatar */}
           <Avatar className="h-8 w-8">

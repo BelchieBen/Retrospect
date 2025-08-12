@@ -7,14 +7,7 @@ import { Button } from "~/components/ui/button";
 import { backendUrl } from "~/constants/backendUrl";
 import { useWebSocket } from "~/lib/WebsocketContext";
 import BoardColumn from "./column";
-import {
-  Plus,
-  Archive,
-  ArchiveRestore,
-  UserPlus,
-  Copy,
-  Check,
-} from "lucide-react";
+import { Archive, ArchiveRestore, Copy, Check } from "lucide-react";
 import {
   DndContext,
   type DragEndEvent,
@@ -34,6 +27,8 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import { useSession } from "next-auth/react";
+import { ICopy, IPlus, ITick, IUsers } from "~/components/Iconography/Icons";
+import { toast } from "sonner";
 
 type ColumnWithCards = Prisma.ColumnGetPayload<{
   include: {
@@ -335,6 +330,7 @@ export default function BoardColumns({
     try {
       await navigator.clipboard.writeText(boardUrl);
       setCopied(true);
+      toast.success("Link copied to clipboard");
       setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
     } catch (err) {
       console.error("Failed to copy URL:", err);
@@ -356,8 +352,8 @@ export default function BoardColumns({
 
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <UserPlus className="mr-2 h-4 w-4" />
+                <Button variant="outline" size="sm" className="gap-2">
+                  <IUsers size={16} />
                   Invite
                 </Button>
               </DialogTrigger>
@@ -386,9 +382,9 @@ export default function BoardColumns({
                         }
                       >
                         {copied ? (
-                          <Check className="h-4 w-4" />
+                          <ITick size={16} color="white" />
                         ) : (
-                          <Copy className="h-4 w-4" />
+                          <ICopy size={16} />
                         )}
                       </Button>
                     </div>
@@ -409,12 +405,12 @@ export default function BoardColumns({
             >
               {showArchivedCards ? (
                 <>
-                  <ArchiveRestore className="mr-2 h-4 w-4" />
+                  <ArchiveRestore className="h-4 w-4" />
                   Hide Archived
                 </>
               ) : (
                 <>
-                  <Archive className="mr-2 h-4 w-4" />
+                  <Archive className="h-4 w-4" />
                   Show Archived
                 </>
               )}
@@ -431,7 +427,7 @@ export default function BoardColumns({
             onClick={addColumn}
             className="min-w-fit flex-shrink-0 self-start"
           >
-            <Plus />
+            <IPlus />
           </Button>
         </div>
       </div>

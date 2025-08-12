@@ -13,12 +13,11 @@ import axios from "axios";
 import { debounce } from "lodash";
 import { Button } from "~/components/ui/button";
 import { Dialog, DialogTrigger } from "~/components/ui/dialog";
-import { X, Archive, Check } from "lucide-react";
 import CardDialog from "./dialog";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useSession } from "next-auth/react";
-import { ICross, IPencil } from "../Iconography/Icons";
+import { IBox, ICross, IPencil, ITick } from "../Iconography/Icons";
 import { useQueryClient } from "react-query";
 
 export function Card({
@@ -83,7 +82,7 @@ export function Card({
                   <Image src={card.gifUrl} fill alt={"GIF"} />
                   {card.archived && (
                     <div className="absolute left-0 top-0 m-2 rounded-full bg-gray-600 p-1 shadow-md">
-                      <Archive className="h-3 w-3 text-white" />
+                      <IBox size={12} color="white" />
                     </div>
                   )}
                   <button
@@ -181,7 +180,7 @@ export function Card({
               className={`m-1 flex h-9 w-full items-center justify-start text-ellipsis rounded-sm bg-transparent px-2 hover:bg-secondary ${card.archived ? "border-2 border-dashed border-gray-400" : ""}`}
             >
               <div className="flex items-center gap-2 rounded-md">
-                {card.archived && <Archive className="h-4 w-4 text-gray-500" />}
+                {card.archived && <IBox size={16} color="gray" />}
                 <p className="line-clamp-1 overflow-ellipsis text-wrap text-start text-base font-normal">
                   {cardName}
                 </p>
@@ -221,7 +220,7 @@ export function Card({
           }
         }}
       >
-        {!isEditingTitle ? <IPencil /> : <Check />}
+        {!isEditingTitle ? <IPencil /> : <ITick />}
       </Button>
     </div>
   );
