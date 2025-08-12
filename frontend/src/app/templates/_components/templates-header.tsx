@@ -6,7 +6,7 @@ import HelixPalette from "~/styles/palette";
 export function TemplatesHeader() {
   return (
     <div
-      className="relative flex items-center justify-between overflow-hidden rounded-lg bg-cover bg-center bg-no-repeat p-6"
+      className="relative flex items-center justify-between overflow-hidden rounded-lg bg-neutral05 bg-cover bg-center bg-no-repeat p-6"
       style={{
         backgroundImage: "url('/our_company.svg')",
       }}

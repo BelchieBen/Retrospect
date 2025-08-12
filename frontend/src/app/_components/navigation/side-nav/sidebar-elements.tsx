@@ -28,12 +28,9 @@ export const SidebarElements = {
     },
     {
       title: "Members",
-      url: "/",
+      url: "/members",
       icon: <IUsers />,
-      action: {
-        icon: "plus",
-        url: "/",
-      },
+      isActive: true,
     },
 
     {

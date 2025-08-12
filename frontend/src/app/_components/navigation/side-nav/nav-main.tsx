@@ -70,17 +70,6 @@ export function NavMain() {
                   </CollapsibleContent>
                 </>
               ) : null}
-              {item.action && (
-                <SidebarMenuAction className="hover:bg-neutral10 data-[state=open]:rotate-90 dark:hover:bg-neutral30">
-                  <a href={item.action.url}>
-                    {/* <Icon
-                      name={item.action.icon}
-                      className="h-4 w-4 text-neutral60 dark:text-neutral40"
-                    /> */}
-                  </a>
-                  <span className="sr-only">Toggle</span>
-                </SidebarMenuAction>
-              )}
             </SidebarMenuItem>
           </Collapsible>
         ))}
