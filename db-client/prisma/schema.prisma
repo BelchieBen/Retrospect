@@ -178,6 +178,8 @@ model User {
 
   notifications Notification[]
   createdNotifications Notification[] @relation("NotificationCreatedBy")
+
+  TeamMembers TeamMembers[]
 }
 
 model VerificationToken {
@@ -226,6 +228,28 @@ model Notification {
   @@index([read])
   @@index([dismissed])
   @@index([createdAt])
+}
+
+model TeamMembers {
+  id        String   @id @default(cuid())
+  teamId    String
+  userId    String
+  team      Team     @relation(fields: [teamId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([teamId, userId])
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  members   TeamMembers[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
 }
 
 enum Role {
