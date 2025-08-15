@@ -14,14 +14,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar";
-import { api } from "~/trpc/server";
 import { getServerAuthSession } from "~/server/auth";
 import Image from "next/image";
+import { ServerBoardAPI } from "~/lib/api/boards/server-board-api";
 
 export async function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
-  const boards = await api.board.getBoards();
+  const boards = await ServerBoardAPI.getBoards();
   const session = await getServerAuthSession();
   return (
     <Sidebar

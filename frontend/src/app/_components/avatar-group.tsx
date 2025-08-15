@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
   Tooltip,
@@ -9,25 +8,15 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { cn } from "~/lib/utils";
-import axios, { type AxiosResponse } from "axios";
-import { backendUrl } from "~/constants/backendUrl";
-import { usePathname } from "next/navigation";
 import { useWebSocket } from "~/lib/WebsocketContext";
 import { useEffect } from "react";
-
-type User = {
-  id: string;
-  user: {
-    name: string;
-    email: string;
-    image: string | null;
-  };
-};
+import { useBoardMembers } from "~/lib/api/boards/board-queries";
 
 interface AvatarGroupProps {
   maxDisplay?: number;
   size?: "sm" | "md" | "lg";
   className?: string;
+  boardId: string;
 }
 
 const sizeClasses = {
@@ -40,17 +29,11 @@ export function AvatarGroup({
   maxDisplay = 5,
   size = "md",
   className,
+  boardId,
 }: Readonly<AvatarGroupProps>) {
-  const pathname = usePathname();
   const { socket } = useWebSocket();
-  const { data: users, refetch } = useQuery("users", async () => {
-    if (!pathname) return [];
-    const boardId = pathname.split("/")[2];
-    const response: AxiosResponse<User[]> = await axios.get(
-      `${backendUrl}/boards/${boardId}/members`,
-    );
-    return response.data;
-  });
+  const { data: users, refetch } = useBoardMembers(boardId);
+
   const displayUsers = users?.slice(0, maxDisplay);
   const remainingCount = users ? users.length - maxDisplay : 0;
 
@@ -60,7 +43,7 @@ export function AvatarGroup({
         await refetch();
       });
     }
-  }, [socket]);
+  }, [socket, refetch]);
 
   const getInitials = (name: string | null) => {
     if (!name) return "?";

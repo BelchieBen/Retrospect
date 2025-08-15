@@ -3,10 +3,9 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation } from "react-query";
 import { useSession } from "next-auth/react";
-import axios from "axios";
 import { Button } from "~/components/ui/button";
+import { useCreateFeedback } from "~/lib/api/feedback/feedback-queries";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import {
@@ -25,7 +24,6 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { toast } from "sonner";
-import { backendUrl } from "~/constants/backendUrl";
 
 const feedbackSchema = z.object({
   type: z.enum(["bug", "feature", "improvement", "general"], {
@@ -51,6 +49,7 @@ type FeedbackFormValues = z.infer<typeof feedbackSchema>;
 
 export function FeedbackForm() {
   const { data: session } = useSession();
+  const createFeedbackMutation = useCreateFeedback();
 
   const form = useForm<FeedbackFormValues>({
     resolver: zodResolver(feedbackSchema),
@@ -65,42 +64,29 @@ export function FeedbackForm() {
 
   const isAnonymous = form.watch("anonymous");
 
-  const submitFeedbackMutation = useMutation({
-    mutationFn: async (data: FeedbackFormValues) => {
-      const response = await axios.post<{
-        id: string;
-        type: string;
-        subject: string;
-        message: string;
-        email?: string;
-        anonymous: boolean;
-        userId?: string;
-        createdAt: string;
-        updatedAt: string;
-      }>(`${backendUrl}/feedback`, {
+  const onSubmit = (data: FeedbackFormValues) => {
+    createFeedbackMutation.mutate(
+      {
         type: data.type,
         subject: data.subject,
         message: data.message,
         email: data.anonymous ? undefined : data.email,
         anonymous: data.anonymous,
         userId: data.anonymous ? undefined : session?.user?.id,
-      });
-      return response.data;
-    },
-    onSuccess: () => {
-      toast.success(
-        "Feedback submitted successfully! Thank you for helping us improve.",
-      );
-      form.reset();
-    },
-    onError: (error) => {
-      console.error("Error submitting feedback:", error);
-      toast.error("Error submitting feedback. Please try again later.");
-    },
-  });
-
-  const onSubmit = (data: FeedbackFormValues) => {
-    submitFeedbackMutation.mutate(data);
+      },
+      {
+        onSuccess: () => {
+          toast.success(
+            "Feedback submitted successfully! Thank you for helping us improve.",
+          );
+          form.reset();
+        },
+        onError: (error) => {
+          console.error("Error submitting feedback:", error);
+          toast.error("Error submitting feedback. Please try again later.");
+        },
+      },
+    );
   };
 
   return (
@@ -239,10 +225,10 @@ export function FeedbackForm() {
         <div className="flex justify-end">
           <Button
             type="submit"
-            disabled={submitFeedbackMutation.isLoading}
+            disabled={createFeedbackMutation.isPending}
             className="bg-teal70 hover:bg-teal80 dark:bg-teal60 dark:hover:bg-teal70"
           >
-            {submitFeedbackMutation.isLoading
+            {createFeedbackMutation.isPending
               ? "Submitting..."
               : "Submit Feedback"}
           </Button>

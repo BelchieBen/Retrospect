@@ -1,10 +1,8 @@
 "use client";
 
 import { Archive, MoreHorizontal, Trash2, AlertTriangle } from "lucide-react";
-import { useState } from "react";
-import { useMutation } from "react-query";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import axios, { type AxiosResponse } from "axios";
 import { toast } from "sonner";
 
 import {
@@ -32,23 +30,21 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "~/components/ui/sidebar";
-import { type Boards, type Prisma } from "@prisma/client";
+import { type Prisma } from "@prisma/client";
 import Link from "next/link";
 import { IPagesStack } from "~/icons";
-import { api } from "~/trpc/react";
 import { useWebSocket } from "~/lib/WebsocketContext";
-import { useEffect } from "react";
-import { backendUrl } from "~/constants/backendUrl";
+import {
+  useBoards,
+  useArchiveBoard,
+  useDeleteBoard,
+} from "~/lib/api/boards/board-queries";
+import { type UserWithBoards } from "~/lib/api/boards/board-client";
 
 export function NavProjects({
   initialBoards,
 }: Readonly<{
-  initialBoards:
-    | Prisma.UserGetPayload<{
-        include: { BoardMembers: { include: { board: true } } };
-      }>
-    | undefined
-    | null;
+  initialBoards: UserWithBoards | undefined | null;
 }>) {
   const { isMobile } = useSidebar();
   const { socket } = useWebSocket();
@@ -61,14 +57,13 @@ export function NavProjects({
     ownerId: string;
   } | null>(null);
 
-  const { data: boards, refetch } = api.board.getBoards.useQuery(undefined, {
-    initialData: initialBoards,
-  });
+  const { data: boards } = useBoards(initialBoards);
 
   useEffect(() => {
     if (socket) {
-      const handleUpdate = async (payload: string) => {
-        await refetch();
+      const handleUpdate = async (_payload: string) => {
+        // React Query will automatically refetch due to cache invalidation
+        // No manual refetch needed as the mutations handle cache invalidation
       };
 
       socket.on("board_updated", handleUpdate);
@@ -77,68 +72,42 @@ export function NavProjects({
         socket.off("board_updated", handleUpdate);
       };
     }
-  }, [socket, refetch]);
+  }, [socket]);
 
   // Archive/Unarchive board mutation
-  const archiveBoardMutation = useMutation({
-    mutationFn: async ({
-      boardId,
-      archived,
-    }: {
-      boardId: string;
-      archived: boolean;
-    }) => {
-      const response: AxiosResponse<Boards> = await axios.patch(
-        `${backendUrl}/boards/${boardId}/archive`,
-        {
-          archived,
-          userId: session?.user?.id,
-        },
-      );
-      return response.data;
-    },
-    onSuccess: (data, variables) => {
-      toast.success(
-        variables.archived
-          ? "Board archived successfully"
-          : "Board unarchived successfully",
-      );
-      void refetch();
-    },
-    onError: () => {
-      toast.error("Failed to archive board");
-    },
-  });
+  const archiveBoardMutation = useArchiveBoard();
 
   // Delete board mutation
-  const deleteBoardMutation = useMutation({
-    mutationFn: async (boardId: string) => {
-      const response: AxiosResponse<{ success: boolean; message: string }> =
-        await axios.delete(`${backendUrl}/boards/${boardId}`, {
-          data: { userId: session?.user?.id },
-        });
-      return response.data;
-    },
-    onSuccess: () => {
-      toast.success("Board deleted successfully");
-      setDeleteModalOpen(false);
-      setSelectedBoard(null);
-      void refetch();
-    },
-    onError: () => {
-      toast.error("Failed to delete board");
-    },
-  });
+  const deleteBoardMutation = useDeleteBoard();
 
   const handleArchiveBoard = (board: {
     id: string;
     name: string;
     archived: boolean;
   }) => {
-    archiveBoardMutation.mutate({
-      boardId: board.id,
-      archived: !board.archived,
-    });
+    if (!session?.user?.id) return;
+
+    archiveBoardMutation.mutate(
+      {
+        boardId: board.id,
+        data: {
+          archived: !board.archived,
+          userId: session.user.id,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success(
+            !board.archived
+              ? "Board archived successfully"
+              : "Board unarchived successfully",
+          );
+        },
+        onError: () => {
+          toast.error("Failed to archive board");
+        },
+      },
+    );
   };
 
   const handleDeleteBoard = (board: {
@@ -152,9 +121,24 @@ export function NavProjects({
   };
 
   const confirmDelete = () => {
-    if (selectedBoard) {
-      deleteBoardMutation.mutate(selectedBoard.id);
-    }
+    if (!selectedBoard || !session?.user?.id) return;
+
+    deleteBoardMutation.mutate(
+      {
+        boardId: selectedBoard.id,
+        data: { userId: session.user.id },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Board deleted successfully");
+          setDeleteModalOpen(false);
+          setSelectedBoard(null);
+        },
+        onError: () => {
+          toast.error("Failed to delete board");
+        },
+      },
+    );
   };
 
   const isOwner = (board: { ownerId: string }) => {
@@ -208,7 +192,7 @@ export function NavProjects({
                   >
                     <DropdownMenuItem
                       onClick={() => handleArchiveBoard(board)}
-                      disabled={archiveBoardMutation.isLoading}
+                      disabled={archiveBoardMutation.isPending}
                     >
                       <Archive className="text-muted-foreground" />
                       <span>
@@ -219,7 +203,7 @@ export function NavProjects({
                     <DropdownMenuItem
                       onClick={() => handleDeleteBoard(board)}
                       disabled={
-                        deleteBoardMutation.isLoading || !isOwner(board)
+                        deleteBoardMutation.isPending || !isOwner(board)
                       }
                       className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
                     >
@@ -257,16 +241,16 @@ export function NavProjects({
             <Button
               variant="outline"
               onClick={() => setDeleteModalOpen(false)}
-              disabled={deleteBoardMutation.isLoading}
+              disabled={deleteBoardMutation.isPending}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={confirmDelete}
-              disabled={deleteBoardMutation.isLoading}
+              disabled={deleteBoardMutation.isPending}
             >
-              {deleteBoardMutation.isLoading ? "Deleting..." : "Delete Board"}
+              {deleteBoardMutation.isPending ? "Deleting..." : "Delete Board"}
             </Button>
           </DialogFooter>
         </DialogContent>

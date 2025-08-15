@@ -23,6 +23,7 @@ export const env = createEnv({
     AZURE_AD_CLIENT_SECRET: z.string(),
     AZURE_AD_TENANT_ID: z.string(),
     DATABASE_URL: z.string(),
+    HMAC_SECRET: z.string(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -36,6 +37,7 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_SOCKET_URL: z.string().url(),
     NEXT_PUBLIC_GIPHY_API_KEY: z.string().min(1),
+    NEXT_PUBLIC_HMAC_SECRET: z.string().min(1),
   },
 
   /**
@@ -50,9 +52,11 @@ export const env = createEnv({
     AZURE_AD_CLIENT_SECRET: process.env.AZURE_AD_CLIENT_SECRET,
     AZURE_AD_TENANT_ID: process.env.AZURE_AD_TENANT_ID,
     DATABASE_URL: process.env.DATABASE_URL,
+    HMAC_SECRET: process.env.HMAC_SECRET,
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_SOCKET_URL: process.env.NEXT_PUBLIC_SOCKET_URL,
     NEXT_PUBLIC_GIPHY_API_KEY: process.env.NEXT_PUBLIC_GIPHY_API_KEY,
+    NEXT_PUBLIC_HMAC_SECRET: process.env.NEXT_PUBLIC_HMAC_SECRET,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

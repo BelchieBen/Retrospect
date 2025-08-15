@@ -18,19 +18,16 @@ export const SidebarElements = {
       title: "Boards",
       url: "/boards",
       icon: <IBookmarkOutline />,
-      isActive: true,
     },
     {
       title: "Templates",
       url: "/templates",
       icon: <IFileText />,
-      isActive: true,
     },
     {
       title: "Members",
       url: "/members",
       icon: <IUsers />,
-      isActive: true,
     },
     {
       title: "Workspace Settings",

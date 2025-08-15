@@ -2,11 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useMutation, useQuery } from "react-query";
-import axios, { type AxiosResponse } from "axios";
 import { formatDistanceToNow } from "date-fns";
 import { X } from "lucide-react";
-import { type Prisma, type Notification } from "@prisma/client";
 import HelixPalette from "~/styles/palette";
 
 import { IBell } from "~/icons";
@@ -18,114 +15,49 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { useWebSocket } from "~/lib/WebsocketContext";
-import { backendUrl } from "~/constants/backendUrl";
 import Image from "next/image";
 import { Skeleton } from "~/components/ui/skeleton";
+import {
+  useNotificationCount,
+  useNotifications,
+  useDismissNotification,
+  useMarkAsRead,
+  useMarkAllAsRead,
+} from "~/lib/api/notifications/notifications-queries";
 
 export function NotificationDropdown() {
   const { data: session } = useSession();
   const { socket } = useWebSocket();
   const [open, setOpen] = useState(false);
 
-  // Get notifications count
-  const { data: notificationCount, refetch: refetchCount } = useQuery(
-    ["notificationCount", session?.user?.id],
-    async () => {
-      if (!session?.user?.id) return null;
-      const response: AxiosResponse<{ unreadCount: number }> = await axios.get(
-        `${backendUrl}/notifications/${session.user.id}/count`,
-      );
-      return response.data;
-    },
-    {
-      enabled: !!session?.user?.id,
-    },
+  const { data: notificationCount } = useNotificationCount(
+    session?.user?.id ?? "",
   );
 
   // Get notifications list when dropdown is opened
-  const {
-    data: notifications,
-    refetch: refetchNotifications,
-    isLoading: isLoadingNotifications,
-  } = useQuery(
-    ["notifications", session?.user?.id, open],
-    async () => {
-      if (!session?.user?.id || !open) return null;
-      const response: AxiosResponse<
-        Prisma.NotificationGetPayload<{ include: { createdByUser: true } }>[]
-      > = await axios.get(
-        `${backendUrl}/notifications/${session.user.id}?includeRead=false&includeDismissed=false&limit=20`,
-      );
-      return response.data;
-    },
-    {
-      enabled: !!session?.user?.id && open,
-    },
-  );
+  const { data: notifications, isLoading: isLoadingNotifications } =
+    useNotifications(session?.user?.id ?? "", {
+      includeRead: false,
+      includeDismissed: false,
+      limit: 20,
+    });
 
-  // Dismiss notification mutation
-  const dismissNotificationMutation = useMutation({
-    mutationFn: async (notificationId: string) => {
-      const response: AxiosResponse<Notification> = await axios.patch(
-        `${backendUrl}/notifications/${notificationId}/dismiss`,
-        {
-          userId: session?.user?.id,
-        },
-      );
-      return response.data;
-    },
-    onSuccess: () => {
-      void refetchNotifications();
-      void refetchCount();
-    },
-  });
+  const dismissNotificationMutation = useDismissNotification();
 
-  // Mark as read mutation
-  const markAsReadMutation = useMutation({
-    mutationFn: async (notificationId: string) => {
-      const response: AxiosResponse<Notification> = await axios.patch(
-        `${backendUrl}/notifications/${notificationId}/read`,
-        {
-          userId: session?.user?.id,
-        },
-      );
-      return response.data;
-    },
-    onSuccess: () => {
-      void refetchNotifications();
-      void refetchCount();
-    },
-  });
+  const markAsReadMutation = useMarkAsRead();
 
-  // Mark all as read mutation
-  const markAllAsReadMutation = useMutation({
-    mutationFn: async () => {
-      const response: AxiosResponse<{ count: number }> = await axios.patch(
-        `${backendUrl}/notifications/${session?.user?.id}/read-all`,
-      );
-      return response.data;
-    },
-    onSuccess: () => {
-      void refetchNotifications();
-      void refetchCount();
-    },
-  });
+  const markAllAsReadMutation = useMarkAllAsRead();
 
-  // Listen for real-time notifications
   useEffect(() => {
     if (socket && session?.user?.id) {
       const handleNotificationCreated = () => {
-        void refetchCount();
-        if (open) {
-          void refetchNotifications();
-        }
+        // React Query will automatically refetch due to cache invalidation
+        // No manual refetch needed as the mutations handle cache invalidation
       };
 
       const handleNotificationUpdated = () => {
-        void refetchCount();
-        if (open) {
-          void refetchNotifications();
-        }
+        // React Query will automatically refetch due to cache invalidation
+        // No manual refetch needed as the mutations handle cache invalidation
       };
 
       socket.on("notification_created", handleNotificationCreated);
@@ -136,18 +68,30 @@ export function NotificationDropdown() {
         socket.off("notification_updated", handleNotificationUpdated);
       };
     }
-  }, [socket, session?.user?.id, open, refetchCount, refetchNotifications]);
+  }, [socket, session?.user?.id]);
 
   const handleDismiss = (notificationId: string) => {
-    dismissNotificationMutation.mutate(notificationId);
+    if (!session?.user?.id) return;
+
+    dismissNotificationMutation.mutate({
+      notificationId,
+      data: { userId: session.user.id },
+    });
   };
 
   const handleMarkAsRead = (notificationId: string) => {
-    markAsReadMutation.mutate(notificationId);
+    if (!session?.user?.id) return;
+
+    markAsReadMutation.mutate({
+      notificationId,
+      data: { userId: session.user.id },
+    });
   };
 
   const handleMarkAllAsRead = () => {
-    markAllAsReadMutation.mutate();
+    if (!session?.user?.id) return;
+
+    markAllAsReadMutation.mutate(session.user.id);
   };
 
   const formatRelativeTime = (dateString: string) => {

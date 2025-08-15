@@ -12,9 +12,11 @@ import cardRoutes from "./routes/cards";
 import commentRoutes from "./routes/comments";
 import feedbackRoutes from "./routes/feedback";
 import notificationRoutes from "./routes/notifications";
+import memberRoutes from "./routes/member";
 import { poolConfig } from "db";
 import { logger, loggerUtils } from "./logger";
 import client from "prom-client";
+import { hmacAuthMiddleware } from "middleware/hmac-auth";
 
 const app = express();
 const server = http.createServer(app);
@@ -141,8 +143,19 @@ server.listen(port, () => {
   );
 });
 
-app.use(cors({ origin: "*" }));
+app.use(
+  cors({
+    origin: "*",
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "x-hmac-signature",
+      "x-hmac-payload",
+    ],
+  })
+);
 app.use(express.json());
+app.use(hmacAuthMiddleware);
 
 // Request logging middleware - log all incoming requests
 app.use(loggerUtils.requestLogger);
@@ -191,3 +204,4 @@ app.use("/cards", cardRoutes);
 app.use("/comments", commentRoutes);
 app.use("/feedback", feedbackRoutes);
 app.use("/notifications", notificationRoutes);
+app.use("/members", memberRoutes);

@@ -7,6 +7,49 @@ const notifier = new PostgresNotifier(poolConfig);
 const boardMembersChannel = notifier.channel("board_members");
 const boardsChannel = notifier.channel("boards");
 
+router.get("/", async (req, res) => {
+  try {
+    const userId = req.userId;
+    req.logger.info({ userId }, "Fetching user boards");
+    const boards = await db.user.findUnique({
+      where: { id: userId },
+      include: {
+        BoardMembers: {
+          include: { board: true },
+          orderBy: {
+            board: {
+              archived: "asc", // false (not archived) first, then true (archived)
+            },
+          },
+        },
+      },
+    });
+    res.json(boards);
+  } catch (error) {
+    req.logger.error({ error }, "Error fetching user teams");
+    res.status(500).json({
+      error: "Failed to fetch user teams",
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+});
+
+router.get("/:id", async (req, res) => {
+  const { id } = req.params;
+  const board = await db.boards.findUnique({
+    where: { id },
+    include: {
+      columns: true,
+      BoardMembers: {
+        include: {
+          user: true,
+        },
+      },
+    },
+  });
+  res.json(board);
+});
+
 router.post("/", async (req, res) => {
   const { title, ownerId } = req.body as { title: string; ownerId: string };
   const board = await db.boards.create({

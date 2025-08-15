@@ -19,20 +19,22 @@ import { TextareaAutosize } from "~/components/ui/textarea-autosize";
 import { type Prisma } from "@prisma/client";
 import React, {
   type ChangeEvent,
-  useCallback,
   useEffect,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
-import { useMutation, useQueryClient } from "react-query";
+
 import { Input } from "~/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
 import { z } from "zod";
-import { backendUrl } from "~/constants/backendUrl";
+import {
+  useUpdateCard,
+  useArchiveCard,
+  useDeleteCard,
+} from "~/lib/api/cards/cards-queries";
+import { columnsKeys } from "~/lib/api/columns/columns-queries";
 import {
   Form,
   FormControl,
@@ -46,8 +48,8 @@ import { Grid } from "@giphy/react-components";
 import giphy from "~/lib/giphy";
 import Image from "next/image";
 import CardComments from "./comments";
-import { debounce } from "lodash";
 import { useSession } from "next-auth/react";
+import { useQueryClient } from "@tanstack/react-query";
 
 const FormSchema = z.object({
   description: z.string().optional(),
@@ -64,57 +66,20 @@ export default function CardDialog({
   const [cardName, setCardName] = useState(card.name ?? "");
   const [giphySearchTerm, setGiphySearchTerm] = useState("");
   const [gifUrl, setGifUrl] = useState(card.gifUrl ?? "");
-  const queryClient = useQueryClient();
+
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
   const cardNameRef = useRef<HTMLTextAreaElement>(null);
   const { data: session } = useSession();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     setCardName(card.name ?? "");
   }, [card.name]);
 
-  const deleteCardMutation = useMutation({
-    mutationFn: async () => {
-      await axios.delete(`${backendUrl}/cards/${card.id}`, {
-        data: {
-          userId: session?.user.id,
-        },
-      });
-    },
-    onSuccess: () => {
-      setShowDeleteDialog(false);
-      // Close the main dialog by triggering a click on the close button or parent handler
-      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
-    },
-    onError: (error) => {
-      console.error("Failed to delete card:", error);
-    },
-  });
-
-  const archiveCardMutation = useMutation({
-    mutationFn: async (archived: boolean) => {
-      await axios.patch(`${backendUrl}/cards/${card.id}/archive`, {
-        archived,
-        userId: session?.user.id,
-      });
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["columns"] });
-
-      toast.success(
-        card.archived
-          ? "Card unarchived successfully"
-          : "Card archived successfully",
-      );
-      // Close the main dialog
-      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
-    },
-    onError: (error) => {
-      console.error("Failed to archive/unarchive card:", error);
-      toast.error("Failed to archive/unarchive card");
-    },
-  });
+  const deleteCardMutation = useDeleteCard();
+  const archiveCardMutation = useArchiveCard();
+  const updateCardMutation = useUpdateCard();
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -123,63 +88,116 @@ export default function CardDialog({
     },
   });
 
-  async function onSubmit(data: z.infer<typeof FormSchema>) {
+  function onSubmit(data: z.infer<typeof FormSchema>) {
     if (!data.description) setEditDescription(false);
-    const response = await axios.put(`${backendUrl}/cards/${card.id}`, {
-      ...data,
-      userId: session?.user.id,
-    });
-    if (response.status === 200) {
-      void queryClient.invalidateQueries({ queryKey: ["columns"] });
-      toast.success("Card updated successfully");
-      setEditDescription(false);
-    } else {
-      toast.error("Failed to update card");
-    }
+    if (!session?.user?.id) return;
+
+    updateCardMutation.mutate(
+      {
+        cardId: card.id,
+        data: {
+          description: data.description,
+          userId: session.user.id,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Card updated successfully");
+          setEditDescription(false);
+        },
+        onError: () => {
+          toast.error("Failed to update card");
+        },
+      },
+    );
   }
 
   function fetchGifsGrid(offset: number) {
     return giphy.search(giphySearchTerm || "trending", { offset, limit: 10 });
   }
 
-  async function updateCardGif(gifUrl: string) {
-    const response = await axios.put(`${backendUrl}/cards/${card.id}`, {
-      gifUrl,
-      userId: session?.user.id,
-    });
-    if (response.status === 200) {
-      void queryClient.invalidateQueries({ queryKey: ["columns"] });
-      toast.success("GIF updated successfully");
-    } else {
-      toast.error("Failed to upload GIF");
-    }
+  function updateCardGif(gifUrl: string) {
+    if (!session?.user?.id) return;
+
+    updateCardMutation.mutate(
+      {
+        cardId: card.id,
+        data: {
+          gifUrl,
+          userId: session.user.id,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("GIF updated successfully");
+          if (card.column?.boardId) {
+            void queryClient.invalidateQueries({
+              queryKey: columnsKeys.list(card.column.boardId, {
+                includeArchived: false,
+              }),
+            });
+          }
+        },
+        onError: () => {
+          toast.error("Failed to upload GIF");
+        },
+      },
+    );
   }
 
-  const saveCardName = useCallback(
-    async (name: string) => {
-      setCardName(name);
-      await axios.put(`${backendUrl}/cards/${card.id}`, {
-        name,
-        userId: session?.user.id,
-      });
-      void queryClient.invalidateQueries({ queryKey: ["columns"] });
-    },
-    [card.id, session],
-  );
+  const saveCardName = (name: string) => {
+    setCardName(name);
+    if (!session?.user?.id) return;
 
-  const debouncedSaveCardTitle = useMemo(
-    () => debounce(saveCardName, 500),
-    [saveCardName],
-  );
+    updateCardMutation.mutate(
+      {
+        cardId: card.id,
+        data: {
+          name,
+          userId: session.user.id,
+        },
+      },
+      {
+        onSuccess: () => {
+          if (card.column?.boardId) {
+            void queryClient.invalidateQueries({
+              queryKey: columnsKeys.list(card.column.boardId, {
+                includeArchived: false,
+              }),
+            });
+          }
+        },
+      },
+    );
+  };
 
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setCardName(e.target.value);
     resizeTextArea(e.target);
-    void debouncedSaveCardTitle(e.target.value);
+    void saveCardName(e.target.value);
   };
 
   const deleteCard = () => {
-    deleteCardMutation.mutate();
+    if (!session?.user?.id) return;
+
+    deleteCardMutation.mutate(
+      {
+        cardId: card.id,
+        data: { userId: session.user.id },
+      },
+      {
+        onSuccess: () => {
+          setShowDeleteDialog(false);
+          // Close the main dialog by triggering a click on the close button or parent handler
+          window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+          toast.success("Card deleted successfully");
+        },
+        onError: (error) => {
+          console.error("Failed to delete card:", error);
+          toast.error("Failed to delete card");
+        },
+      },
+    );
   };
 
   const handleDeleteClick = () => {
@@ -229,8 +247,36 @@ export default function CardDialog({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => archiveCardMutation.mutate(!card.archived)}
-              disabled={archiveCardMutation.isLoading}
+              onClick={() => {
+                if (!session?.user?.id) return;
+                archiveCardMutation.mutate(
+                  {
+                    cardId: card.id,
+                    data: {
+                      archived: !card.archived,
+                      userId: session.user.id,
+                    },
+                  },
+                  {
+                    onSuccess: () => {
+                      toast.success(
+                        card.archived
+                          ? "Card unarchived successfully"
+                          : "Card archived successfully",
+                      );
+                      // Close the main dialog
+                      window.dispatchEvent(
+                        new KeyboardEvent("keydown", { key: "Escape" }),
+                      );
+                    },
+                    onError: (error) => {
+                      console.error("Failed to archive/unarchive card:", error);
+                      toast.error("Failed to archive/unarchive card");
+                    },
+                  },
+                );
+              }}
+              disabled={archiveCardMutation.isPending}
               className={
                 card.archived
                   ? "text-blue-600 hover:bg-blue-50 hover:text-blue-700"
@@ -391,16 +437,16 @@ export default function CardDialog({
             <Button
               variant="outline"
               onClick={() => setShowDeleteDialog(false)}
-              disabled={deleteCardMutation.isLoading}
+              disabled={deleteCardMutation.isPending}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={deleteCard}
-              disabled={deleteCardMutation.isLoading}
+              disabled={deleteCardMutation.isPending}
             >
-              {deleteCardMutation.isLoading ? "Deleting..." : "Delete Card"}
+              {deleteCardMutation.isPending ? "Deleting..." : "Delete Card"}
             </Button>
           </DialogFooter>
         </DialogContent>

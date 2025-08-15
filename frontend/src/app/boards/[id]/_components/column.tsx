@@ -1,9 +1,7 @@
 "use client";
 import { type Prisma } from "@prisma/client";
-import axios from "axios";
 import { Ellipsis, Plus } from "lucide-react";
 import { type ChangeEvent, useEffect, useMemo, useState } from "react";
-import { useMutation } from "react-query";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -22,7 +20,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { backendUrl } from "~/constants/backendUrl";
+import {
+  useUpdateColumn,
+  useDeleteColumn,
+} from "~/lib/api/columns/columns-queries";
+import { useCreateCard } from "~/lib/api/cards/cards-queries";
 import { useSession } from "next-auth/react";
 import { Card } from "./card";
 import { useDroppable, useDndContext } from "@dnd-kit/core";
@@ -108,43 +110,9 @@ export default function BoardColumn({
     );
   }, [active, over, column.id, column.cards]);
 
-  const deleteColumnMutation = useMutation({
-    mutationFn: async () => {
-      await axios.delete(`${backendUrl}/columns/${column.id}`);
-    },
-    onSuccess: () => {
-      setShowDeleteDialog(false);
-    },
-    onError: (error) => {
-      console.error("Failed to delete column:", error);
-    },
-  });
-
-  const addCardMutation = useMutation({
-    mutationFn: async () => {
-      await axios.post(`${backendUrl}/cards`, {
-        userId: session?.user?.id,
-        columnId: column.id,
-        boardId: column.boardId,
-        title: null,
-      });
-    },
-    onError: (error) => {
-      console.error("Failed to add card:", error);
-    },
-  });
-
-  const updateColumnMutation = useMutation({
-    mutationFn: async ({ name, userId }: { name: string; userId: string }) => {
-      await axios.put(`${backendUrl}/columns/${column.id}`, {
-        name,
-        userId,
-      });
-    },
-    onError: (error) => {
-      console.error("Failed to save column title:", error);
-    },
-  });
+  const deleteColumnMutation = useDeleteColumn();
+  const addCardMutation = useCreateCard();
+  const updateColumnMutation = useUpdateColumn();
   useEffect(() => {
     setColumnName(column.name ?? "");
   }, [column]);
@@ -154,16 +122,34 @@ export default function BoardColumn({
     if (!userId) return;
     const newValue = e.target.value;
     setColumnName(newValue);
-    updateColumnMutation.mutate({ name: newValue, userId });
-    // debouncedSaveColumnTitle(newValue);
+    updateColumnMutation.mutate({
+      columnId: column.id,
+      data: { name: newValue, userId },
+    });
   };
 
   const addCard = () => {
-    addCardMutation.mutate();
+    if (!session?.user?.id) return;
+
+    addCardMutation.mutate({
+      userId: session.user.id,
+      columnId: column.id,
+      boardId: column.boardId,
+      title: null,
+    });
   };
 
-  const deleteColumn = async () => {
-    deleteColumnMutation.mutate();
+  const deleteColumn = () => {
+    if (!session?.user?.id) return;
+
+    deleteColumnMutation.mutate(column.id, {
+      onSuccess: () => {
+        setShowDeleteDialog(false);
+      },
+      onError: (error) => {
+        console.error("Failed to delete column:", error);
+      },
+    });
   };
 
   const handleDeleteClick = () => {
@@ -229,16 +215,16 @@ export default function BoardColumn({
             <Button
               variant="outline"
               onClick={() => setShowDeleteDialog(false)}
-              disabled={deleteColumnMutation.isLoading}
+              disabled={deleteColumnMutation.isPending}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={deleteColumn}
-              disabled={deleteColumnMutation.isLoading}
+              disabled={deleteColumnMutation.isPending}
             >
-              {deleteColumnMutation.isLoading ? "Deleting..." : "Delete Column"}
+              {deleteColumnMutation.isPending ? "Deleting..." : "Delete Column"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -270,9 +256,9 @@ export default function BoardColumn({
           variant={"ghost"}
           className="w-full justify-start hover:bg-accent"
           onClick={addCard}
-          disabled={addCardMutation.isLoading}
+          disabled={addCardMutation.isPending}
         >
-          <Plus /> {addCardMutation.isLoading ? "Adding..." : "Add a card"}
+          <Plus /> {addCardMutation.isPending ? "Adding..." : "Add a card"}
         </Button>
       </div>
     </div>

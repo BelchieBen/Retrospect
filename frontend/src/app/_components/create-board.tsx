@@ -19,12 +19,10 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
-import axios, { type AxiosResponse } from "axios";
-import { backendUrl } from "~/constants/backendUrl";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { type Boards } from "@prisma/client";
 import { useState } from "react";
+import { useCreateBoard } from "~/lib/api/boards/board-queries";
 
 const FormSchema = z.object({
   title: z.string().min(1, {
@@ -48,19 +46,31 @@ export function CreateBoard({ children }: CreateBoardProps) {
     },
   });
 
+  const createBoard = useCreateBoard();
+
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    const response: AxiosResponse<Boards> = await axios.post(
-      `${backendUrl}/boards`,
+    if (!session?.user?.id) {
+      console.error("User not authenticated");
+      return;
+    }
+
+    createBoard.mutate(
       {
         title: data.title,
-        ownerId: session?.user?.id,
+        ownerId: session.user.id,
+      },
+      {
+        onSuccess: (newBoard) => {
+          form.reset();
+          setOpen(false);
+          router.push(`/boards/${newBoard.id}`);
+        },
+        onError: (error) => {
+          console.error("Failed to create board:", error);
+          // You might want to show a toast notification here
+        },
       },
     );
-    if (response.status === 200) {
-      form.reset();
-      setOpen(false);
-      router.push(`/boards/${response.data.id}`);
-    }
   }
 
   return (
@@ -127,9 +137,10 @@ export function CreateBoard({ children }: CreateBoardProps) {
           </Button>
           <Button
             onClick={form.handleSubmit(onSubmit)}
-            className="bg-teal80 text-white hover:bg-teal70"
+            disabled={createBoard.isPending}
+            className="bg-teal80 text-white hover:bg-teal70 disabled:opacity-50"
           >
-            Create Board
+            {createBoard.isPending ? "Creating..." : "Create Board"}
           </Button>
         </div>
       </DialogContent>

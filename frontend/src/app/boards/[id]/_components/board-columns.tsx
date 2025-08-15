@@ -1,11 +1,10 @@
 "use client";
 import { type Prisma } from "@prisma/client";
-import axios, { type AxiosResponse } from "axios";
 import { useEffect, useState } from "react";
-import { useQuery, useMutation } from "react-query";
 import { Button } from "~/components/ui/button";
-import { backendUrl } from "~/constants/backendUrl";
 import { useWebSocket } from "~/lib/WebsocketContext";
+import { useColumns, useCreateColumn } from "~/lib/api/columns/columns-queries";
+import { useUpdateCard } from "~/lib/api/cards/cards-queries";
 import BoardColumn from "./column";
 import { Archive, ArchiveRestore } from "lucide-react";
 import {
@@ -29,6 +28,7 @@ import {
 import { useSession } from "next-auth/react";
 import { ICopy, IPlus, ITick, IUsers } from "~/icons";
 import { toast } from "sonner";
+import { type BoardWithDetails } from "~/lib/api/boards/board-client";
 
 type ColumnWithCards = Prisma.ColumnGetPayload<{
   include: {
@@ -45,16 +45,7 @@ type ColumnWithCards = Prisma.ColumnGetPayload<{
 export default function BoardColumns({
   initialBoard,
 }: Readonly<{
-  initialBoard: Prisma.BoardsGetPayload<{
-    include: {
-      columns: true;
-      BoardMembers: {
-        include: {
-          user: true;
-        };
-      };
-    };
-  }>;
+  initialBoard: BoardWithDetails;
 }>) {
   const { socket } = useWebSocket();
   const session = useSession();
@@ -77,29 +68,8 @@ export default function BoardColumns({
     }),
   );
 
-  const moveCardMutation = useMutation({
-    mutationFn: async ({
-      cardId,
-      newColumnId,
-      newPosition,
-    }: {
-      cardId: string;
-      newColumnId: string;
-      newPosition: number;
-    }) => {
-      await axios.put(`${backendUrl}/cards/${cardId}`, {
-        columnId: newColumnId,
-        position: newPosition,
-        userId: session.data?.user.id,
-      });
-    },
-    onSuccess: () => {
-      // Backend update successful
-    },
-    onError: (error) => {
-      console.error("Failed to move card:", error);
-    },
-  });
+  const moveCardMutation = useUpdateCard();
+  const createColumnMutation = useCreateColumn();
 
   const updateLocalColumns = (
     cardId: string,
@@ -199,10 +169,15 @@ export default function BoardColumns({
 
     updateLocalColumns(cardId, overColumn.id, newPosition);
 
+    if (!session.data?.user?.id) return;
+
     moveCardMutation.mutate({
       cardId,
-      newColumnId: overColumn.id,
-      newPosition,
+      data: {
+        columnId: overColumn.id,
+        position: newPosition,
+        userId: session.data.user.id,
+      },
     });
   };
 
@@ -225,19 +200,29 @@ export default function BoardColumns({
 
       updateLocalColumns(cardId, targetColumn.id, targetCardIndex);
 
+      if (!session.data?.user?.id) return;
+
       moveCardMutation.mutate({
         cardId,
-        newColumnId: targetColumn.id,
-        newPosition: targetCardIndex,
+        data: {
+          columnId: targetColumn.id,
+          position: targetCardIndex,
+          userId: session.data.user.id,
+        },
       });
     } else {
       // Moving between different columns
       updateLocalColumns(cardId, targetColumn.id, targetCardIndex);
 
+      if (!session.data?.user?.id) return;
+
       moveCardMutation.mutate({
         cardId,
-        newColumnId: targetColumn.id,
-        newPosition: targetCardIndex,
+        data: {
+          columnId: targetColumn.id,
+          position: targetCardIndex,
+          userId: session.data.user.id,
+        },
       });
     }
   };
@@ -263,37 +248,21 @@ export default function BoardColumns({
     return null;
   };
 
-  const { data: columns, refetch } = useQuery(
-    ["columns", initialBoard.id, showArchivedCards],
-    async () => {
-      const response: AxiosResponse<
-        Prisma.ColumnGetPayload<{
-          include: {
-            cards: {
-              include: {
-                comments: { include: { createdBy: true } };
-                createdBy: true;
-                column: true;
-              };
-            };
-          };
-        }>[]
-      > = await axios.get(
-        `${backendUrl}/columns/${initialBoard.id}?includeArchived=${showArchivedCards}`,
-      );
-
-      return response.data;
+  const { data: columns, refetch: refetchColumns } = useColumns(
+    initialBoard.id,
+    {
+      includeArchived: showArchivedCards,
     },
   );
 
   // Sync local state with fetched data
   useEffect(() => {
     if (columns) {
-      setLocalColumns(columns);
+      setLocalColumns(columns as unknown as ColumnWithCards[]);
     }
   }, [columns]);
 
-  // Handle websocket updates - disabled to prevent overwriting local state
+  // Handle websocket updates - React Query handles cache invalidation automatically
   useEffect(() => {
     if (socket) {
       const handleUpdate = async (payload: string) => {
@@ -303,7 +272,7 @@ export default function BoardColumns({
         };
 
         if (session.data?.user.id !== payloadData.userId) {
-          await refetch();
+          void refetchColumns();
         }
       };
 
@@ -315,14 +284,26 @@ export default function BoardColumns({
         socket.off("card_updated", handleUpdate);
       };
     }
-  }, [socket]);
+  }, [socket, session.data?.user.id]);
 
-  const addColumn = async () => {
-    if (!initialBoard || !localColumns) return;
-    await axios.post(`${backendUrl}/columns`, {
-      boardId: initialBoard.id,
-      position: localColumns.length + 1,
-    });
+  const addColumn = () => {
+    if (!initialBoard) return;
+
+    createColumnMutation.mutate(
+      {
+        boardId: initialBoard.id,
+        name: null, // Will be set when user edits the column
+      },
+      {
+        onSuccess: () => {
+          toast.success("Column added");
+          void refetchColumns();
+        },
+        onError: () => {
+          toast.error("Failed to add column");
+        },
+      },
+    );
   };
 
   const copyBoardUrl = async () => {
@@ -348,7 +329,7 @@ export default function BoardColumns({
         <div className="flex flex-shrink-0 items-center justify-between">
           <h1 className="text-2xl font-bold">{initialBoard.name}</h1>
           <div className="flex items-center gap-3">
-            <AvatarGroup maxDisplay={4} size="sm" />
+            <AvatarGroup maxDisplay={4} size="sm" boardId={initialBoard.id} />
 
             <Dialog>
               <DialogTrigger asChild>

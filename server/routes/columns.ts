@@ -24,7 +24,7 @@ router.post("/", async (req, res) => {
     },
   });
 
-  columnsChannel.notify(JSON.stringify(column));
+  columnsChannel.notify(JSON.stringify({ ...column, userId: req.userId }));
   res.json(column);
 });
 

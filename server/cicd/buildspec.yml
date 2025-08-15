@@ -11,11 +11,12 @@ phases:
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - echo Fetching DATABASE_URL from AWS SSM Parameter Store...
       - DATABASE_URL=$(aws ssm get-parameter --name "/retrospect/prod/DATABASE_URL" --with-decryption --region eu-west-3 --query "Parameter.Value" --output text)
+      - HMAC_SECRET=$(aws ssm get-parameter --name "/retrospect/prod/HMAC_SECRET" --with-decryption --region eu-west-3 --query "Parameter.Value" --output text)
       - GITHUB_PACKAGE_TOKEN=$(aws ssm get-parameter --name "/retrospect/prod/GITHUB_PACKAGE_TOKEN" --with-decryption --region eu-west-3 --query "Parameter.Value" --output text)
   build:
     commands:
       - echo Building the Docker image...
-      - docker build --build-arg GITHUB_TOKEN="$GITHUB_PACKAGE_TOKEN" --build-arg DATABASE_URL="$DATABASE_URL" -t $REPOSITORY_URI:$IMAGE_TAG .
+      - docker build --build-arg GITHUB_TOKEN="$GITHUB_PACKAGE_TOKEN" --build-arg DATABASE_URL="$DATABASE_URL" --build-arg HMAC_SECRET="$HMAC_SECRET" -t $REPOSITORY_URI:$IMAGE_TAG .
   post_build:
     commands:
       - echo Pushing the Docker image...

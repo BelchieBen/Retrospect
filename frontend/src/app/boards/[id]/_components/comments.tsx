@@ -1,15 +1,16 @@
 import { type Prisma } from "@prisma/client";
-import axios, { type AxiosResponse } from "axios";
 import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useQuery } from "react-query";
 import { z } from "zod";
 import { useWebSocket } from "~/lib/WebsocketContext";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import moment from "moment";
-import { backendUrl } from "~/constants/backendUrl";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  useComments,
+  useCreateComment,
+} from "~/lib/api/comments/comments-queries";
 import { toast } from "sonner";
 import { Logs } from "lucide-react";
 import {
@@ -39,22 +40,19 @@ export default function CardComments({
   const { data: session } = useSession();
   const { socket } = useWebSocket();
 
-  const { data: comments, refetch } = useQuery(
-    ["comments", card.id],
-    async () => {
-      const response: AxiosResponse<
-        Prisma.CommentGetPayload<{ include: { createdBy: true } }>[]
-      > = await axios.get(`${backendUrl}/comments/${card.id}`);
-
-      return response.data;
-    },
-  );
+  const { data: comments } = useComments(card.id);
+  const createCommentMutation = useCreateComment();
 
   useEffect(() => {
     if (socket) {
-      socket.on("comment_updated", async () => {
-        await refetch();
+      socket.on("comment_updated", () => {
+        // React Query will automatically refetch due to cache invalidation
+        // handled by the createCommentMutation
       });
+
+      return () => {
+        socket.off("comment_updated");
+      };
     }
   }, [socket]);
 
@@ -65,20 +63,30 @@ export default function CardComments({
     },
   });
 
-  async function onCommentSubmit(data: z.infer<typeof CommentFormSchema>) {
-    if (!data.value) setAddComment(false);
-    const response = await axios.post(`${backendUrl}/comments`, {
-      ...data,
-      cardId: card.id,
-      userId: session?.user.id,
-    });
-    if (response.status === 200) {
-      toast.success("Card updated successfully");
+  function onCommentSubmit(data: z.infer<typeof CommentFormSchema>) {
+    if (!data.value) {
       setAddComment(false);
-      commentForm.reset();
-    } else {
-      toast.error("Failed to update card");
+      return;
     }
+    if (!session?.user?.id) return;
+
+    createCommentMutation.mutate(
+      {
+        cardId: card.id,
+        value: data.value,
+        userId: session.user.id,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Comment added successfully");
+          setAddComment(false);
+          commentForm.reset();
+        },
+        onError: () => {
+          toast.error("Failed to add comment");
+        },
+      },
+    );
   }
 
   return (
@@ -117,11 +125,17 @@ export default function CardComments({
                     )}
                   />
                   <div className="flex gap-2">
-                    <Button type="submit">Save</Button>
+                    <Button
+                      type="submit"
+                      disabled={createCommentMutation.isPending}
+                    >
+                      {createCommentMutation.isPending ? "Saving..." : "Save"}
+                    </Button>
                     <Button
                       variant={"outline"}
                       className="w-fit bg-secondary"
                       onClick={() => setAddComment(false)}
+                      disabled={createCommentMutation.isPending}
                     >
                       Cancel
                     </Button>

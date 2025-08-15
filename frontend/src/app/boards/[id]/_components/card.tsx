@@ -1,16 +1,7 @@
 "use client";
 
-import {
-  useState,
-  useEffect,
-  useCallback,
-  type ChangeEvent,
-  useRef,
-} from "react";
+import { useState, useEffect, type ChangeEvent, useRef } from "react";
 import { type Prisma } from "@prisma/client";
-import { backendUrl } from "~/constants/backendUrl";
-import axios from "axios";
-import { debounce } from "lodash";
 import { Button } from "~/components/ui/button";
 import { Dialog, DialogTrigger } from "~/components/ui/dialog";
 import CardDialog from "./card-dialog";
@@ -18,7 +9,7 @@ import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { useSession } from "next-auth/react";
 import { IBox, ICross, IPencil, ITick } from "~/icons";
-import { useQueryClient } from "react-query";
+import { useUpdateCard } from "~/lib/api/cards/cards-queries";
 
 export function Card({
   card,
@@ -35,7 +26,7 @@ export function Card({
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const cardNameRef = useRef<HTMLTextAreaElement>(null);
   const { data: session } = useSession();
-  const queryClient = useQueryClient();
+  const updateCardMutation = useUpdateCard();
 
   useEffect(() => {
     setCardName(card.name ?? "");
@@ -48,25 +39,24 @@ export function Card({
     }
   }, [cardName, isEditingTitle]);
 
-  const saveCardName = async (name: string) => {
+  const saveCardName = (name: string) => {
     setCardName(name);
-    await axios.put(`${backendUrl}/cards/${card.id}`, {
-      name,
-      userId: session?.user.id,
-    });
-    void queryClient.invalidateQueries({ queryKey: ["columns"] });
-  };
+    if (!session?.user?.id) return;
 
-  const debouncedSaveCardTitle = useCallback(
-    debounce((name: string) => saveCardName(name), 500),
-    [card.id],
-  );
+    updateCardMutation.mutate({
+      cardId: card.id,
+      data: {
+        name,
+        userId: session.user.id,
+      },
+    });
+  };
 
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setCardName(e.target.value);
     e.target.style.height = "auto";
     e.target.style.height = `${e.target.scrollHeight}px`;
-    void debouncedSaveCardTitle(e.target.value);
+    void saveCardName(e.target.value);
   };
 
   if (card.gifUrl)

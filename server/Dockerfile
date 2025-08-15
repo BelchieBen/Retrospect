@@ -66,6 +66,8 @@ WORKDIR /usr/src/app
 # Set environment variables
 ARG DATABASE_URL
 ENV DATABASE_URL=${DATABASE_URL}
+ARG HMAC_SECRET
+ENV HMAC_SECRET=${HMAC_SECRET}
 ENV NODE_ENV=production
 
 # Copy production dependencies from dependencies stage (includes Prisma engines)

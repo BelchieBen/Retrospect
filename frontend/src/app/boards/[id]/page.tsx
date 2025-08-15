@@ -1,9 +1,7 @@
-import axios from "axios";
 import { redirect } from "next/navigation";
 import BoardColumns from "./_components/board-columns";
-import { backendUrl } from "~/constants/backendUrl";
 import { getServerAuthSession } from "~/server/auth";
-import { api } from "~/trpc/server";
+import { ServerBoardAPI } from "~/lib/api/boards/server-board-api";
 
 export default async function BoardPage({
   params,
@@ -12,12 +10,13 @@ export default async function BoardPage({
   const session = await getServerAuthSession();
   if (!session?.user) redirect("/auth/signin");
 
-  const board = await api.board.getBoard({ id });
+  const board = await ServerBoardAPI.getBoard(id);
+  console.log(board);
   if (!board) redirect("/404");
 
   // Automatically add user to board if they're not already a member
   try {
-    await axios.post(`${backendUrl}/boards/join`, {
+    await ServerBoardAPI.joinBoard({
       userId: session.user.id,
       boardId: id,
     });
