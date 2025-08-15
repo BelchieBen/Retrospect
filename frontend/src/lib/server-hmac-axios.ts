@@ -148,6 +148,8 @@ class ServerHMACAxiosClient {
 }
 
 // Create and export a default server instance
-const serverHMACAxios = new ServerHMACAxiosClient();
+const serverHMACAxios = new ServerHMACAxiosClient(
+  "https://api.retrospect.digital",
+);
 
 export default serverHMACAxios;
