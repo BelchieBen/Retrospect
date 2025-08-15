@@ -24,6 +24,7 @@ export const env = createEnv({
     AZURE_AD_TENANT_ID: z.string(),
     DATABASE_URL: z.string(),
     HMAC_SECRET: z.string(),
+    BACKEND_URL: z.string(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -53,6 +54,7 @@ export const env = createEnv({
     AZURE_AD_TENANT_ID: process.env.AZURE_AD_TENANT_ID,
     DATABASE_URL: process.env.DATABASE_URL,
     HMAC_SECRET: process.env.HMAC_SECRET,
+    BACKEND_URL: process.env.BACKEND_URL,
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_SOCKET_URL: process.env.NEXT_PUBLIC_SOCKET_URL,
     NEXT_PUBLIC_GIPHY_API_KEY: process.env.NEXT_PUBLIC_GIPHY_API_KEY,

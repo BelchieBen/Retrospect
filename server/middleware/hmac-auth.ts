@@ -74,6 +74,10 @@ export function hmacAuthMiddleware(
     return next();
   }
 
+  if (req.url === "/metrics" || req.url === "/") {
+    return next();
+  }
+
   try {
     const signature = req.headers["x-hmac-signature"] as string;
     const payloadHeader = req.headers["x-hmac-payload"] as string;
