@@ -20,14 +20,14 @@ export const SidebarElements = {
       icon: <IBookmarkOutline />,
     },
     {
-      title: "Templates",
-      url: "/templates",
-      icon: <IFileText />,
-    },
-    {
       title: "Team Members",
       url: "/members",
       icon: <IUsers />,
+    },
+    {
+      title: "Templates",
+      url: "/templates",
+      icon: <IFileText />,
     },
     {
       title: "Workspace Settings",
