@@ -25,11 +25,6 @@ export const SidebarElements = {
       icon: <IFileText />,
     },
     {
-      title: "Members",
-      url: "/members",
-      icon: <IUsers />,
-    },
-    {
       title: "Team Members",
       url: "/members",
       icon: <IUsers />,
