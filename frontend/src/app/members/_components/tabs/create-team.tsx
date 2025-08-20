@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -9,6 +9,9 @@ import { IPlus, IUsers, IUser } from "~/icons";
 import HelixPalette from "~/styles/palette";
 import type { User } from "../../page";
 import UserItem from "../user-item";
+import { useCreateTeam } from "~/lib/api/team-members/members-queries";
+import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 
 interface CreateTeamTabProps {
   users: User[];
@@ -18,6 +21,25 @@ export default function CreateTeamTab({ users }: CreateTeamTabProps) {
   const [teamName, setTeamName] = useState("");
   const [selectedTeamMembers, setSelectedTeamMembers] = useState<User[]>([]);
 
+  const { data: session } = useSession();
+  const createTeamMutation = useCreateTeam();
+
+  // Automatically add current user to team members on component mount
+  useEffect(() => {
+    if (session?.user?.id && users.length > 0) {
+      const currentUser = users.find((user) => user.id === session.user.id);
+      if (currentUser) {
+        setSelectedTeamMembers((prev) => {
+          // Only add if not already present
+          if (prev.some((member) => member.id === currentUser.id)) {
+            return prev;
+          }
+          return [currentUser, ...prev];
+        });
+      }
+    }
+  }, [session?.user?.id, users]);
+
   // Filter users for team creation - exclude those already selected
   const availableUsers = users.filter(
     (user) => !selectedTeamMembers.some((member) => member.id === user.id),
@@ -25,24 +47,33 @@ export default function CreateTeamTab({ users }: CreateTeamTabProps) {
 
   const handleCreateTeam = () => {
     if (!teamName.trim()) {
-      alert("Please enter a team name");
+      toast.error("Please enter a team name");
       return;
     }
-    if (selectedTeamMembers.length === 0) {
-      alert("Please add at least one team member");
-      return;
-    }
+    // Current user is automatically included, so we should always have at least one member
 
-    // TODO: Implement actual team creation logic
-    console.log("Creating team:", {
-      name: teamName,
-      members: selectedTeamMembers.map((m) => m.id),
-    });
-    alert(
-      `Team "${teamName}" would be created with ${selectedTeamMembers.length} members`,
+    createTeamMutation.mutate(
+      {
+        name: teamName.trim(),
+        memberIds: selectedTeamMembers.map((m) => m.id),
+      },
+      {
+        onSuccess: (createdTeam) => {
+          toast.success(`Team "${createdTeam.name}" created successfully!`);
+          setTeamName(""); // Reset form
+
+          // Reset selected members but keep current user
+          const currentUser = users.find(
+            (user) => user.id === session?.user?.id,
+          );
+          setSelectedTeamMembers(currentUser ? [currentUser] : []);
+        },
+        onError: (error) => {
+          console.error("Failed to create team:", error);
+          toast.error("Failed to create team. Please try again.");
+        },
+      },
     );
-    setTeamName(""); // Reset form
-    setSelectedTeamMembers([]); // Reset selected members
   };
 
   const handleAddUser = (userId: string) => {
@@ -53,6 +84,12 @@ export default function CreateTeamTab({ users }: CreateTeamTabProps) {
   };
 
   const handleRemoveUser = (userId: string) => {
+    // Prevent removing the current user (team creator)
+    if (userId === session?.user?.id) {
+      toast.info("You cannot remove yourself as the team creator");
+      return;
+    }
+
     setSelectedTeamMembers(
       selectedTeamMembers.filter((member) => member.id !== userId),
     );
@@ -61,7 +98,7 @@ export default function CreateTeamTab({ users }: CreateTeamTabProps) {
     <Card className="border-neutral20 dark:border-neutral60">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-neutral90 dark:text-white">
-          <IPlus color={HelixPalette.teal60} size={20} />
+          <IPlus size={20} />
           Create New Team
           <span className="ml-auto text-sm font-normal text-neutral60 dark:text-neutral40">
             {selectedTeamMembers.length} member
@@ -96,7 +133,7 @@ export default function CreateTeamTab({ users }: CreateTeamTabProps) {
             {/* Available Users */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <IUser color={HelixPalette.blue60} size={18} />
+                <IUser size={18} />
                 <h4 className="font-medium text-neutral90 dark:text-white">
                   Available Users
                 </h4>
@@ -131,7 +168,7 @@ export default function CreateTeamTab({ users }: CreateTeamTabProps) {
             {/* Selected Team Members */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <IUsers color={HelixPalette.teal60} size={18} />
+                <IUsers size={18} />
                 <h4 className="font-medium text-neutral90 dark:text-white">
                   Team Members
                 </h4>
@@ -173,11 +210,11 @@ export default function CreateTeamTab({ users }: CreateTeamTabProps) {
           <Button
             onClick={handleCreateTeam}
             className="bg-teal60 hover:bg-teal70"
-            disabled={!teamName.trim() || selectedTeamMembers.length === 0}
+            disabled={!teamName.trim() || createTeamMutation.isPending}
             size="lg"
           >
             <IPlus color={HelixPalette.white} size={16} />
-            Create Team
+            {createTeamMutation.isPending ? "Creating..." : "Create Team"}
           </Button>
         </div>
       </CardContent>

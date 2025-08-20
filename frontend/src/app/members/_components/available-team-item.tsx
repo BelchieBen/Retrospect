@@ -2,17 +2,19 @@
 
 import type { TeamWithMembers } from "../page";
 import { Button } from "~/components/ui/button";
-import { IPlus } from "~/icons";
+import { IPaperPlane, IPlus } from "~/icons";
 import TeamAvatarGroup from "./team-avatar-group";
 
 export default function AvailableTeamItem({
   team,
   onRequestJoin,
   isEven,
+  isLoading = false,
 }: {
   team: TeamWithMembers;
   onRequestJoin: (teamId: string) => void;
   isEven: boolean;
+  isLoading?: boolean;
 }) {
   const teamMembers = team.members;
   const memberCount = team.memberCount;
@@ -29,7 +31,7 @@ export default function AvailableTeamItem({
             {team.name}
           </span>
           <div className="flex items-center gap-2">
-            <TeamAvatarGroup teamMembers={teamMembers} maxDisplay={4} />
+            <TeamAvatarGroup teamMembers={teamMembers} />
             <span className="text-sm text-neutral60 dark:text-neutral40">
               {memberCount} member{memberCount !== 1 ? "s" : ""}
             </span>
@@ -41,10 +43,11 @@ export default function AvailableTeamItem({
         variant="outline"
         size="sm"
         onClick={() => onRequestJoin(team.id)}
-        className="border-teal60 text-teal60 hover:bg-teal60 hover:text-white"
+        disabled={isLoading}
+        className="border-teal60 text-teal60 hover:bg-teal60 hover:text-white disabled:opacity-50"
       >
-        <IPlus color="currentColor" size={16} />
-        Request to Join
+        <IPaperPlane color="currentColor" size={16} />
+        {isLoading ? "Joining..." : "Join Team"}
       </Button>
     </div>
   );

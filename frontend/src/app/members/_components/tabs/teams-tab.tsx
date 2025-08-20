@@ -7,26 +7,117 @@ import MyTeamItem from "../my-team-item";
 import { useState } from "react";
 import HelixPalette from "~/styles/palette";
 import type { UserTeamMembership, TeamWithMembers } from "../../page";
+import {
+  useAvailableTeams,
+  useJoinTeam,
+  useLeaveTeam,
+  useMyTeams,
+} from "~/lib/api/team-members/members-queries";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
+import { AlertTriangle, Trash2 } from "lucide-react";
 
 interface TeamsTabProps {
-  myTeams: UserTeamMembership[];
-  availableTeams: TeamWithMembers[];
+  initialMyTeams: UserTeamMembership[];
+  initialAvailableTeams: TeamWithMembers[];
 }
 
-export default function TeamsTab({ myTeams, availableTeams }: TeamsTabProps) {
+export default function TeamsTab({
+  initialMyTeams,
+  initialAvailableTeams,
+}: TeamsTabProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [teamToDelete, setTeamToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
+  const joinTeamMutation = useJoinTeam();
+  const leaveTeamMutation = useLeaveTeam();
+
+  const { data: myTeams } = useMyTeams(initialMyTeams);
+  const { data: availableTeams } = useAvailableTeams({
+    initialData: initialAvailableTeams,
+  });
 
   // Filter available teams by search term
-  const filteredAvailableTeams = availableTeams.filter((team) =>
+  const filteredAvailableTeams = availableTeams?.filter((team) =>
     team.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleRequestJoin = (teamId: string) => {
-    const team = availableTeams.find((t) => t.id === teamId);
+    const team = availableTeams?.find((t) => t.id === teamId);
     if (team) {
-      // TODO: Implement actual join request logic
-      console.log("Requesting to join team:", teamId);
-      alert(`Join request sent for "${team.name}"`);
+      joinTeamMutation.mutate(teamId, {
+        onSuccess: () => {
+          toast.success(`Successfully joined "${team.name}"!`);
+        },
+        onError: (error) => {
+          console.error("Failed to join team:", error);
+          toast.error(`Failed to join "${team.name}". Please try again.`);
+        },
+      });
+    }
+  };
+
+  const handleLeaveTeam = (teamId: string) => {
+    const teamMember = myTeams?.find((tm) => tm.team.id === teamId);
+    if (teamMember) {
+      // Check if this user is the only member in the team
+      const isLastMember = teamMember.team.members?.length === 1;
+
+      if (isLastMember) {
+        // Show confirmation modal for team deletion
+        setTeamToDelete({
+          id: teamId,
+          name: teamMember.team.name,
+        });
+        setShowDeleteModal(true);
+      } else {
+        // Proceed with normal leave
+        performLeaveTeam(teamId, teamMember.team.name, false);
+      }
+    }
+  };
+
+  const performLeaveTeam = (
+    teamId: string,
+    teamName: string,
+    isLastMember = false,
+  ) => {
+    leaveTeamMutation.mutate(teamId, {
+      onSuccess: () => {
+        if (isLastMember) {
+          toast.success(`Team "${teamName}" has been deleted`);
+        } else {
+          toast.success(`Successfully left "${teamName}"`);
+        }
+        setShowDeleteModal(false);
+        setTeamToDelete(null);
+      },
+      onError: (error) => {
+        console.error("Failed to leave team:", error);
+        if (isLastMember) {
+          toast.error(`Failed to delete "${teamName}". Please try again.`);
+        } else {
+          toast.error(`Failed to leave "${teamName}". Please try again.`);
+        }
+      },
+    });
+  };
+
+  const handleConfirmLeaveAndDelete = () => {
+    if (teamToDelete) {
+      performLeaveTeam(teamToDelete.id, teamToDelete.name, true);
     }
   };
   return (
@@ -38,12 +129,12 @@ export default function TeamsTab({ myTeams, availableTeams }: TeamsTabProps) {
             My Teams
           </h2>
           <span className="ml-auto text-sm text-neutral60 dark:text-neutral40">
-            {myTeams.length} team{myTeams.length !== 1 ? "s" : ""}
+            {myTeams?.length} team{myTeams?.length !== 1 ? "s" : ""}
           </span>
         </div>
 
         <div className="overflow-hidden rounded-lg border border-neutral05 drop-shadow-xl dark:border-neutral60">
-          {myTeams.length === 0 ? (
+          {myTeams?.length === 0 ? (
             <div className="flex flex-col items-center justify-center bg-white py-12 text-center dark:bg-neutral05">
               <IUsers color={HelixPalette.neutral40} size={48} />
               <p className="mt-2 text-neutral60 dark:text-neutral40">
@@ -54,11 +145,13 @@ export default function TeamsTab({ myTeams, availableTeams }: TeamsTabProps) {
               </p>
             </div>
           ) : (
-            myTeams.map((teamMember, index) => (
+            myTeams?.map((teamMember, index) => (
               <MyTeamItem
                 key={teamMember.id}
                 teamMember={teamMember}
                 isEven={index % 2 === 1}
+                onLeaveTeam={handleLeaveTeam}
+                isLoading={leaveTeamMutation.isPending}
               />
             ))
           )}
@@ -73,8 +166,8 @@ export default function TeamsTab({ myTeams, availableTeams }: TeamsTabProps) {
             Available Teams
           </h2>
           <span className="ml-auto text-sm text-neutral60 dark:text-neutral40">
-            {filteredAvailableTeams.length} team
-            {filteredAvailableTeams.length !== 1 ? "s" : ""}
+            {filteredAvailableTeams?.length} team
+            {filteredAvailableTeams?.length !== 1 ? "s" : ""}
           </span>
         </div>
 
@@ -99,7 +192,7 @@ export default function TeamsTab({ myTeams, availableTeams }: TeamsTabProps) {
         </div>
 
         <div className="overflow-hidden rounded-lg border border-neutral05 drop-shadow-xl dark:border-neutral60">
-          {filteredAvailableTeams.length === 0 ? (
+          {filteredAvailableTeams?.length === 0 ? (
             <div className="flex flex-col items-center justify-center bg-white py-12 text-center dark:bg-neutral05">
               <ISearch color={HelixPalette.neutral40} size={48} />
               <p className="mt-2 text-neutral60 dark:text-neutral40">
@@ -114,17 +207,56 @@ export default function TeamsTab({ myTeams, availableTeams }: TeamsTabProps) {
               )}
             </div>
           ) : (
-            filteredAvailableTeams.map((team, index) => (
+            filteredAvailableTeams?.map((team, index) => (
               <AvailableTeamItem
                 key={team.id}
                 team={team}
                 onRequestJoin={handleRequestJoin}
                 isEven={index % 2 === 1}
+                isLoading={joinTeamMutation.isPending}
               />
             ))
           )}
         </div>
       </div>
+
+      {/* Team Deletion Confirmation Modal */}
+      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+              Delete Team
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              You are the only member of &ldquo;{teamToDelete?.name}&rdquo;.
+              Leaving this team will permanently delete it. This action cannot
+              be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowDeleteModal(false);
+                setTeamToDelete(null);
+              }}
+              disabled={leaveTeamMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleConfirmLeaveAndDelete}
+              disabled={leaveTeamMutation.isPending}
+            >
+              {leaveTeamMutation.isPending ? "Deleting..." : "Delete Team"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

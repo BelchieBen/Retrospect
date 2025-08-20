@@ -37,7 +37,9 @@ export interface TeamWithMembers extends Team {
 }
 
 export interface UserTeamMembership extends TeamMember {
-  team: Team;
+  team: Team & {
+    members: TeamMember[];
+  };
 }
 
 export interface CreateTeamData {

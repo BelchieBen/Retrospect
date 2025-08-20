@@ -3,6 +3,7 @@ import {
   type Team,
   type TeamMembers,
   type User,
+  type Prisma,
 } from "@prisma/client";
 
 export interface TeamWithMembers extends Team {
@@ -12,10 +13,28 @@ export interface TeamWithMembers extends Team {
   memberCount: number;
 }
 
-export interface UserTeamMembership extends TeamMembers {
-  team: Team;
-  user: Pick<User, "id" | "name" | "email" | "image" | "role">;
-}
+export type UserTeamMembership = Prisma.TeamMembersGetPayload<{
+  include: {
+    team: {
+      include: {
+        members: {
+          include: {
+            user: true;
+          };
+        };
+      };
+    };
+    user: {
+      select: {
+        id: true;
+        name: true;
+        email: true;
+        image: true;
+        role: true;
+      };
+    };
+  };
+}>;
 
 export interface CreateTeamData {
   name: string;
@@ -54,7 +73,7 @@ export default class MembersService {
         userId,
       },
       include: {
-        team: true,
+        team: { include: { members: { include: { user: true } } } },
         user: {
           select: {
             id: true,
@@ -240,7 +259,11 @@ export default class MembersService {
         userId,
       },
       include: {
-        team: true,
+        team: {
+          include: {
+            members: { include: { user: true } },
+          },
+        },
         user: {
           select: {
             id: true,
@@ -258,6 +281,7 @@ export default class MembersService {
 
   /**
    * Remove a user from a team
+   * If the user is the last member, the team will be deleted
    */
   async leaveTeam(teamId: string, userId: string): Promise<void> {
     const membership = await this.db.teamMembers.findFirst({
@@ -271,11 +295,27 @@ export default class MembersService {
       throw new Error("User is not a member of this team");
     }
 
+    // Check if this is the last member in the team
+    const memberCount = await this.db.teamMembers.count({
+      where: {
+        teamId,
+      },
+    });
+
     await this.db.teamMembers.delete({
       where: {
         id: membership.id,
       },
     });
+
+    if (memberCount === 1) {
+      // This is the last member, delete the entire team
+      await this.db.team.delete({
+        where: {
+          id: teamId,
+        },
+      });
+    }
   }
 
   /**

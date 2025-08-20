@@ -5,6 +5,8 @@ import { type User } from "../page";
 import { IPlus } from "~/icons";
 import { Button } from "~/components/ui/button";
 import HelixPalette from "~/styles/palette";
+import { useSession } from "next-auth/react";
+import { Badge } from "~/app/_components/ui/badge";
 
 export default function UserItem({
   user,
@@ -24,6 +26,7 @@ export default function UserItem({
       .toUpperCase()
       .slice(0, 2);
   };
+  const { data: session } = useSession();
 
   return (
     <div className="flex items-center justify-between rounded-lg border border-neutral20 p-4 transition-colors hover:bg-neutral05 dark:border-neutral60 dark:hover:bg-neutral20">
@@ -35,9 +38,14 @@ export default function UserItem({
           </AvatarFallback>
         </Avatar>
         <div className="flex flex-col">
-          <span className="font-medium text-neutral90 dark:text-white">
-            {user.name ?? "Unknown User"}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-neutral90 dark:text-white">
+              {user.name ?? "Unknown User"}
+            </span>
+            {user.id === session?.user?.id && (
+              <Badge className="text-xs">You</Badge>
+            )}
+          </div>
           <span className="text-sm text-neutral60 dark:text-neutral40">
             {user.email ?? "No email"}
           </span>

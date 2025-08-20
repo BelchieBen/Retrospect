@@ -1,5 +1,5 @@
 import { Button } from "~/components/ui/button";
-import { IUsers } from "~/icons";
+import { IUsers, ICross } from "~/icons";
 import HelixPalette from "~/styles/palette";
 import type { UserTeamMembership } from "../page";
 import TeamAvatarGroup from "./team-avatar-group";
@@ -7,13 +7,14 @@ import TeamAvatarGroup from "./team-avatar-group";
 export default function MyTeamItem({
   teamMember,
   isEven,
+  onLeaveTeam,
+  isLoading = false,
 }: {
   teamMember: UserTeamMembership;
   isEven: boolean;
+  onLeaveTeam?: (teamId: string) => void;
+  isLoading?: boolean;
 }) {
-  // Use the memberCount from the team data
-  const memberCount = teamMember.team.memberCount;
-
   return (
     <div
       className={`flex items-center justify-between p-4 transition-colors hover:bg-neutral10 ${
@@ -26,18 +27,29 @@ export default function MyTeamItem({
             {teamMember.team.name}
           </span>
           <div className="flex items-center gap-2">
-            <TeamAvatarGroup teamMembers={[teamMember]} maxDisplay={4} />
-            <span className="text-sm text-neutral60 dark:text-neutral40">
-              {memberCount} member{memberCount !== 1 ? "s" : ""}
-            </span>
+            <TeamAvatarGroup teamMembers={teamMember.team.members} />
           </div>
         </div>
       </div>
 
-      <Button variant="outline" size="sm" disabled>
-        <IUsers color={HelixPalette.neutral60} size={16} />
-        Member
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm" disabled>
+          <IUsers color={HelixPalette.neutral60} size={16} />
+          Member
+        </Button>
+        {onLeaveTeam && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onLeaveTeam(teamMember.team.id)}
+            disabled={isLoading}
+            className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white disabled:opacity-50"
+          >
+            <ICross color="currentColor" size={16} />
+            {isLoading ? "Leaving..." : "Leave"}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

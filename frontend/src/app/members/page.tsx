@@ -49,7 +49,10 @@ export default async function MembersPage() {
         </TabsList>
 
         <TabsContent value="teams" className="mt-6 space-y-6">
-          <TeamsTab myTeams={myTeams} availableTeams={availableTeams} />
+          <TeamsTab
+            initialMyTeams={myTeams}
+            initialAvailableTeams={availableTeams}
+          />
         </TabsContent>
 
         <TabsContent value="create" className="mt-6">

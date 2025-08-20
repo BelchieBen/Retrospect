@@ -6,6 +6,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ClientMembersAPI,
+  TeamWithMembers,
+  UserTeamMembership,
   type CreateTeamData,
   type UpdateTeamData,
 } from "./members-client";
@@ -32,35 +34,40 @@ export function useUsers() {
     queryKey: membersKeys.users(),
     queryFn: () => ClientMembersAPI.getUsers(),
     enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
 /**
  * Hook to get user's teams
  */
-export function useMyTeams() {
+export function useMyTeams(initialData?: UserTeamMembership[]) {
   const { isAuthenticated } = useAuthenticatedAxios();
 
   return useQuery({
     queryKey: membersKeys.myTeams(),
+    initialData,
     queryFn: () => ClientMembersAPI.getMyTeams(),
     enabled: isAuthenticated,
-    staleTime: 1 * 60 * 1000, // 1 minute
   });
 }
 
 /**
  * Hook to get available teams to join
  */
-export function useAvailableTeams(search?: string) {
+export function useAvailableTeams({
+  initialData,
+  search,
+}: {
+  initialData?: TeamWithMembers[];
+  search?: string;
+}) {
   const { isAuthenticated } = useAuthenticatedAxios();
 
   return useQuery({
     queryKey: membersKeys.availableTeams(search),
+    initialData,
     queryFn: () => ClientMembersAPI.getAvailableTeams(search),
     enabled: isAuthenticated,
-    staleTime: 1 * 60 * 1000, // 1 minute
   });
 }
 
@@ -74,7 +81,6 @@ export function useTeam(teamId: string) {
     queryKey: membersKeys.team(teamId),
     queryFn: () => ClientMembersAPI.getTeam(teamId),
     enabled: isAuthenticated && !!teamId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
   });
 }
 
