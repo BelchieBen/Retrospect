@@ -30,6 +30,11 @@ export const SidebarElements = {
       icon: <IUsers />,
     },
     {
+      title: "Team Members",
+      url: "/members",
+      icon: <IUsers />,
+    },
+    {
       title: "Workspace Settings",
       url: "/",
       icon: <ICog />,
