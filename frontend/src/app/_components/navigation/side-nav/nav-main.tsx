@@ -3,6 +3,7 @@ import { SidebarElements } from "./sidebar-elements";
 import HelixPalette from "~/styles/palette";
 
 const items = SidebarElements.navMain;
+console.log("NAV ITEMS ", items);
 
 import {
   Collapsible,
