@@ -99,7 +99,7 @@ export function Card({
                 </div>
 
                 <div className="flex w-full items-center justify-between gap-2">
-                  <p className="line-clamp-2 overflow-ellipsis break-words text-start text-base font-normal">
+                  <p className="line-clamp-3 overflow-ellipsis break-words text-start text-base font-normal">
                     {cardName}
                   </p>
                   <Avatar className="h-6 w-6">
@@ -171,7 +171,7 @@ export function Card({
             >
               <div className="flex items-center gap-2 rounded-md">
                 {card.archived && <IBox size={16} color="gray" />}
-                <p className="line-clamp-1 overflow-ellipsis text-wrap text-start text-base font-normal">
+                <p className="line-clamp-3 overflow-ellipsis text-wrap text-start text-base font-normal">
                   {cardName}
                 </p>
               </div>
