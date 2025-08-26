@@ -167,7 +167,7 @@ export function Card({
           <DialogTrigger asChild>
             <Button
               variant="ghost"
-              className={`m-1 flex h-9 w-full items-center justify-start text-ellipsis rounded-sm bg-transparent px-2 hover:bg-secondary ${card.archived ? "border-2 border-dashed border-gray-400" : ""}`}
+              className={`m-1 flex h-fit min-h-9 w-full items-center justify-start text-ellipsis rounded-sm bg-transparent px-2 hover:bg-secondary ${card.archived ? "border-2 border-dashed border-gray-400" : ""}`}
             >
               <div className="flex items-center gap-2 rounded-md">
                 {card.archived && <IBox size={16} color="gray" />}
