@@ -61,8 +61,30 @@ function DraggableCard({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  // Simple and fast event handler that prevents drag from form elements
+  const handlePointerDown = (e: React.PointerEvent) => {
+    const target = e.target as HTMLElement;
+    // Quick check: if it's a form element, stop the event from reaching the drag listeners
+    if (
+      target.tagName === "TEXTAREA" ||
+      target.tagName === "INPUT" ||
+      target.contentEditable === "true"
+    ) {
+      e.stopPropagation();
+      return;
+    }
+    // Let the original drag listener handle it
+    listeners?.onPointerDown?.(e);
+  };
+
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onPointerDown={handlePointerDown}
+    >
       <Card card={card} />
     </div>
   );

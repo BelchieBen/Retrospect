@@ -130,6 +130,7 @@ export function Card({
               <div className="flex w-full items-center justify-between gap-2">
                 <textarea
                   className="flex-2 w-full resize-none rounded-sm bg-transparent px-2 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+                  style={{ pointerEvents: "auto" }}
                   ref={cardNameRef}
                   value={cardName}
                   onKeyDown={(e) => {
@@ -180,6 +181,7 @@ export function Card({
         ) : (
           <textarea
             className="m-0.5 w-full resize-none rounded-sm bg-transparent p-2 focus-visible:bg-transparent focus-visible:outline-none"
+            style={{ pointerEvents: "auto" }}
             ref={cardNameRef}
             value={cardName}
             onKeyDown={(e) => {

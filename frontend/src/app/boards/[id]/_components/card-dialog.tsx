@@ -235,6 +235,7 @@ export default function CardDialog({
                 rows={1}
                 value={cardName}
                 className="w-full resize-none overflow-hidden border-b-2 border-teal80 bg-transparent p-1 focus-visible:outline-none"
+                style={{ pointerEvents: "auto" }}
                 onChange={handleChange}
               />
             </div>
@@ -330,6 +331,7 @@ export default function CardDialog({
                                 rows={6}
                                 {...field}
                                 ref={descriptionInputRef}
+                                style={{ pointerEvents: "auto" }}
                               />
                             </FormControl>
                             <FormMessage />
@@ -385,6 +387,7 @@ export default function CardDialog({
             <Input
               placeholder="Search for GIFs"
               value={giphySearchTerm}
+              style={{ pointerEvents: "auto" }}
               onChange={(e) => {
                 setGiphySearchTerm(e.target.value);
                 void fetchGifsGrid(0);
