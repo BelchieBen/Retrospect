@@ -1,11 +1,11 @@
 {
   "name": "@BelchieBen/retrospect-db-client",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "generate": "prisma generate",
-    "db:push": "prisma db push",
+    "generate": "npx prisma generate",
+    "db:push": "npx prisma db push",
     "postinstall": "npm run generate",
     "prepublishOnly": "npm run generate"
   },
