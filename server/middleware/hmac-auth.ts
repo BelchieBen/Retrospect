@@ -84,14 +84,17 @@ export function hmacAuthMiddleware(
 
     // Check if required headers are present
     if (!signature || !payloadHeader) {
-      logger.warn("Missing HMAC headers in request", {
-        url: req.url,
-        method: req.method,
-        headers: {
-          hasSignature: !!signature,
-          hasPayload: !!payloadHeader,
+      logger.warn(
+        {
+          url: req.url,
+          method: req.method,
+          headers: {
+            hasSignature: !!signature,
+            hasPayload: !!payloadHeader,
+          },
         },
-      });
+        "Missing HMAC headers in request"
+      );
       return res.status(401).json({
         error: "Authentication required",
         message: "Missing HMAC signature or payload",
@@ -106,11 +109,14 @@ export function hmacAuthMiddleware(
       );
       payload = JSON.parse(decodedPayload);
     } catch (error) {
-      logger.warn("Invalid HMAC payload format", {
-        url: req.url,
-        method: req.method,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
+      logger.warn(
+        {
+          url: req.url,
+          method: req.method,
+          error: error instanceof Error ? error.message : "Unknown error",
+        },
+        "Invalid HMAC payload format"
+      );
       return res.status(401).json({
         error: "Authentication failed",
         message: "Invalid payload format",
@@ -119,14 +125,17 @@ export function hmacAuthMiddleware(
 
     // Validate payload structure
     if (!payload.userId || !payload.timestamp) {
-      logger.warn("Invalid HMAC payload structure", {
-        url: req.url,
-        method: req.method,
-        payload: {
-          hasUserId: !!payload.userId,
-          hasTimestamp: !!payload.timestamp,
+      logger.warn(
+        {
+          url: req.url,
+          method: req.method,
+          payload: {
+            hasUserId: !!payload.userId,
+            hasTimestamp: !!payload.timestamp,
+          },
         },
-      });
+        "Invalid HMAC payload structure"
+      );
       return res.status(401).json({
         error: "Authentication failed",
         message: "Invalid payload structure",
@@ -137,13 +146,16 @@ export function hmacAuthMiddleware(
     const now = Date.now();
     const timeDiff = Math.abs(now - payload.timestamp);
     if (timeDiff > MAX_TIMESTAMP_DIFF) {
-      logger.warn("HMAC timestamp expired", {
-        url: req.url,
-        method: req.method,
-        userId: payload.userId,
-        timeDiff,
-        maxAllowed: MAX_TIMESTAMP_DIFF,
-      });
+      logger.warn(
+        {
+          url: req.url,
+          method: req.method,
+          userId: payload.userId,
+          timeDiff,
+          maxAllowed: MAX_TIMESTAMP_DIFF,
+        },
+        "HMAC timestamp expired"
+      );
       return res.status(401).json({
         error: "Authentication failed",
         message: "Request timestamp expired",
@@ -152,11 +164,14 @@ export function hmacAuthMiddleware(
 
     // Verify the signature
     if (!verifyHMACSignature(payload, signature)) {
-      logger.warn("HMAC signature verification failed", {
-        url: req.url,
-        method: req.method,
-        userId: payload.userId,
-      });
+      logger.warn(
+        {
+          url: req.url,
+          method: req.method,
+          userId: payload.userId,
+        },
+        "HMAC signature verification failed"
+      );
       return res.status(401).json({
         error: "Authentication failed",
         message: "Invalid signature",
@@ -169,11 +184,14 @@ export function hmacAuthMiddleware(
       const payloadDataString = JSON.stringify(payload.requestData || {});
 
       if (requestDataString !== payloadDataString) {
-        logger.warn("Request data mismatch with HMAC payload", {
-          url: req.url,
-          method: req.method,
-          userId: payload.userId,
-        });
+        logger.warn(
+          {
+            url: req.url,
+            method: req.method,
+            userId: payload.userId,
+          },
+          "Request data mismatch with HMAC payload"
+        );
         return res.status(401).json({
           error: "Authentication failed",
           message: "Request data integrity check failed",
@@ -185,19 +203,25 @@ export function hmacAuthMiddleware(
     (req as AuthenticatedRequest).userId = payload.userId;
     (req as AuthenticatedRequest).hmacPayload = payload;
 
-    logger.info("HMAC authentication successful", {
-      url: req.url,
-      method: req.method,
-      userId: payload.userId,
-    });
+    logger.info(
+      {
+        url: req.url,
+        method: req.method,
+        userId: payload.userId,
+      },
+      "HMAC authentication successful"
+    );
 
     next();
   } catch (error) {
-    logger.error("HMAC authentication error", {
-      url: req.url,
-      method: req.method,
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
+    logger.error(
+      {
+        url: req.url,
+        method: req.method,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      "HMAC authentication error"
+    );
     res.status(500).json({
       error: "Authentication error",
       message: "Internal server error during authentication",
@@ -225,11 +249,14 @@ export function devBypassMiddleware(
       requestData: req.body,
     };
 
-    logger.warn("Using development HMAC bypass", {
-      url: req.url,
-      method: req.method,
-      userId,
-    });
+    logger.warn(
+      {
+        url: req.url,
+        method: req.method,
+        userId,
+      },
+      "Using development HMAC bypass"
+    );
 
     return next();
   }
