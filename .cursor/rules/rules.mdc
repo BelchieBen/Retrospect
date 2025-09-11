@@ -1,0 +1,749 @@
+---
+description: Development rules and conventions for the Retrospect project - a collaborative retrospective tool built with Next.js 15, Express.js, and PostgreSQL
+globs:
+alwaysApply: true
+---
+
+# Retrospect Project Rules
+
+This project is a retrospective tool built for team collaboration with boards, cards, and real-time updates.
+
+## Architecture Overview
+
+### Technology Stack
+
+- **Frontend**: Next.js 15 with App Router, React 18, TypeScript
+- **Backend**: Express.js with Socket.IO for real-time features
+- **Database**: PostgreSQL with Prisma ORM
+- **Styling**: Tailwind CSS with custom design system
+- **Authentication**: NextAuth.js with HMAC-based API security
+- **State Management**: React Query (@tanstack/react-query) + Zustand for client state
+- **Debugging**: Redux DevTools Extension (@redux-devtools/extension) for Zustand store debugging
+- **Component Library**: Radix UI with custom components
+
+### Project Structure
+
+```
+├── frontend/           # Next.js application
+├── server/            # Express.js API server
+├── db-client/         # Shared Prisma schema package
+└── README.md
+```
+
+## Frontend (Next.js) Rules
+
+### File Organization & Naming
+
+#### Page Structure
+
+- Use Next.js 15 App Router exclusively
+- All pages should be server components by default (avoid "use client" unless necessary)
+- Each page should have a dedicated `layout.tsx` that renders the `RootLayout` component
+- Page files are named `page.tsx`
+- Layout files are named `layout.tsx`
+
+#### Component Organization
+
+- **Page-specific components**: Place in `[page]/_components/` folder
+- **Shared components**: Place in `src/app/_components/` folder
+- **UI components**: Place in `src/app/_components/ui/` folder
+- Component files use kebab-case: `team-avatar-group.tsx`
+- Export component as default export with the same name as file (PascalCase)
+
+#### API Layer Organization
+
+```
+src/lib/api/
+├── [feature]/
+│   ├── [feature]-client.ts      # API client class with types
+│   ├── [feature]-queries.ts     # React Query hooks
+│   └── server-[feature]-api.ts  # Server-side API client
+```
+
+### TypeScript Conventions
+
+#### Type Definitions
+
+- Define interfaces in the same file as the API client
+- Use Prisma generated types with `Prisma.ModelGetPayload<>` for complex queries
+- Export types from client files and re-export in page files when needed
+- Use `type` keyword for type aliases, `interface` for object shapes
+
+#### Import Aliases
+
+- Use `~` alias for src directory: `~/components/ui/button`
+- Use `~/icons` for iconography imports
+- Use `~/lib/api` for API-related imports
+
+### Component Patterns
+
+#### Server Components (Default)
+
+- Fetch data outside of React hooks using API clients
+- Use `getServerAuthSession()` for authentication
+- Handle redirects with Next.js `redirect()` function
+- Pass fetched data as props to client components
+
+```tsx
+export default async function BoardPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const id = (await params).id;
+  const session = await getServerAuthSession();
+  if (!session?.user) redirect("/auth/signin");
+
+  const board = await ServerBoardAPI.getBoard(id);
+  if (!board) redirect("/404");
+
+  return <BoardColumns initialBoard={board} />;
+}
+```
+
+#### Client Components
+
+- Use "use client" directive only when needed (state, effects, event handlers)
+- Prefer React Query hooks for data fetching
+- Use HMAC authentication with `useAuthenticatedAxios()` hook
+- Wrap in `Readonly<>` for props types
+
+```tsx
+"use client";
+
+export default function BoardColumns({
+  initialBoard,
+}: Readonly<{ initialBoard: BoardWithDetails }>) {
+  const { data: columns } = useColumns(initialBoard.id);
+  // ... component logic
+}
+```
+
+#### Layout Components
+
+- Each page directory should have `layout.tsx` that wraps children with `RootLayout`
+- `RootLayout` provides sidebar, header, and theme providers
+- Don't duplicate the skeleton HTML structure - it's in the root layout
+
+```tsx
+import RootLayout from "~/components/root-layout";
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <RootLayout>{children}</RootLayout>;
+}
+```
+
+### Data Fetching Patterns
+
+#### React Query Implementation
+
+- Use React Query for client-side data fetching
+- Define query keys consistently: `[feature]Keys.method(params)`
+- Implement optimistic updates in mutations
+- Use `enabled` option to prevent unnecessary requests
+
+```tsx
+export const boardsKeys = {
+  all: ["boards"] as const,
+  lists: () => [...boardsKeys.all, "list"] as const,
+  list: (filters: GetBoardsParams) =>
+    [...boardsKeys.lists(), { filters }] as const,
+};
+```
+
+#### HMAC Authentication
+
+- All API requests use HMAC authentication
+- Client-side: Use `useAuthenticatedAxios()` hook
+- Server-side: Use `ServerHMACAxiosClient` instance
+- Authentication middleware automatically extracts `userId` from HMAC signature
+
+### Styling Guidelines
+
+#### Tailwind CSS
+
+- Use custom color palette: `neutral`, `teal`, `pink`, `yellow`, `green`, `blue`, `red`, `orange`
+- Color naming: `neutral10`, `teal60`, etc. (increments of 10)
+- Use Gilroy font family (custom loaded font)
+- Follow existing spacing and sizing patterns
+
+#### Component Styling
+
+- Use `cn()` utility for conditional classes (tailwind-merge)
+- Use CSS variables for theming
+- Dark mode support with `dark:` prefix
+- Use Radix UI primitives as base for custom components
+
+### Icon System
+
+- Icons are in `src/app/_components/Iconography/Icons/`
+- Import from `~/icons` alias
+- Use `I` prefix for icon names: `IPlus`, `IUsers`, `ITick`
+- Icons are SVG components, not icon font
+
+### State Management (Zustand)
+
+#### Store Organization
+
+- **Store files**: Place in `src/lib/zustand/[feature]/` directory
+- **Store structure**: `[feature]-store.ts` for store definition
+- **Provider files**: `[feature]-store-provider.tsx` for React context wrapper
+- **Root provider**: `store-provider.tsx` to wrap all store providers
+
+#### Store Structure Pattern
+
+```typescript
+import { createStore } from "zustand/vanilla";
+import { devtools } from "zustand/middleware";
+
+// Types first - define state and actions separately
+export type FeatureState = {
+  data: Record<string, SomeType[]>;
+  uiState: boolean;
+};
+
+export type FeatureActions = {
+  setData: (id: string, data: SomeType[]) => void;
+  toggleUiState: (id: string) => void;
+  clearData: (id: string) => void;
+};
+
+export type FeatureStore = FeatureState & FeatureActions;
+
+// Default initial state
+export const defaultInitState: FeatureState = {
+  data: {},
+  uiState: false,
+};
+
+// Store factory function with Redux DevTools
+export const createFeatureStore = (
+  initState: FeatureState = defaultInitState
+) => {
+  return createStore<FeatureStore>()(
+    devtools(
+      (set, _get) => ({
+        ...initState,
+
+        // Actions with descriptive names for debugging
+        setData: (id: string, data: SomeType[]) => {
+          set(
+            (state) => ({
+              data: {
+                ...state.data,
+                [id]: data,
+              },
+            }),
+            undefined,
+            "feature/setData" // Action name for Redux DevTools
+          );
+        },
+
+        toggleUiState: (id: string) => {
+          set(
+            (state) => ({
+              uiState: !state.uiState,
+            }),
+            undefined,
+            "feature/toggleUiState"
+          );
+        },
+
+        clearData: (id: string) => {
+          set(
+            (state) => {
+              const newData = { ...state.data };
+              delete newData[id];
+              return { data: newData };
+            },
+            undefined,
+            "feature/clearData"
+          );
+        },
+      }),
+      {
+        name: "feature-store", // Custom name for Redux DevTools
+        enabled: process.env.NODE_ENV === "development", // Only enable in development
+      }
+    )
+  );
+};
+```
+
+#### Redux DevTools Integration
+
+##### Setup and Configuration
+
+- Always wrap Zustand stores with the `devtools` middleware for debugging
+- Import `devtools` from `zustand/middleware`
+- Configure with appropriate store name and development-only enablement
+- Requires `@redux-devtools/extension` package to be installed
+
+```typescript
+import { devtools } from "zustand/middleware";
+
+export const createFeatureStore = (
+  initState: FeatureState = defaultInitState
+) => {
+  return createStore<FeatureStore>()(
+    devtools(
+      (set, get) => ({
+        // Store implementation
+      }),
+      {
+        name: "feature-store", // Unique identifier for the store
+        enabled: process.env.NODE_ENV === "development", // Only enable in development
+      }
+    )
+  );
+};
+```
+
+##### Action Naming Conventions
+
+- **Always provide action names** as the third parameter to `set()` calls
+- Use namespace/action format: `"feature/actionName"`
+- Action names should be descriptive and indicate what the action does
+- Use consistent naming across related stores
+
+**Action Naming Examples:**
+
+```typescript
+// Boards store actions
+"boards/setColumns";
+"boards/addColumn";
+"boards/removeColumn";
+"boards/updateColumn";
+"boards/clearBoardData";
+"boards/toggleShowArchivedCards";
+
+// Cards store actions
+"cards/setCardsForColumn";
+"cards/addCard";
+"cards/updateCard";
+"cards/removeCard";
+"cards/moveCard"; // For drag-and-drop operations
+"cards/reorderCard"; // For reordering within same column
+"cards/setActiveCard"; // For UI state tracking
+```
+
+##### DevTools Usage Patterns
+
+```typescript
+// Basic action with name
+set(
+  (state) => ({ data: newData }),
+  undefined, // Replace function (use undefined for merge)
+  "feature/setData" // Action name for debugging
+);
+
+// Complex action with descriptive name
+set(
+  (state) => {
+    const newItems = { ...state.items };
+    delete newItems[itemId];
+    return { items: newItems };
+  },
+  undefined,
+  "feature/removeItem"
+);
+
+// Optimistic update actions
+set(
+  (state) => ({
+    items: state.items.map((item) =>
+      item.id === itemId ? { ...item, ...updates } : item
+    ),
+  }),
+  undefined,
+  "feature/updateItemOptimistic"
+);
+```
+
+##### Debugging Best Practices
+
+- **Use meaningful store names**: Help distinguish between multiple stores
+- **Action granularity**: Each logical operation should have its own action name
+- **Consistent prefixes**: Use the same prefix for all actions in a store
+- **Time travel debugging**: Action names enable stepping through state changes
+- **Performance monitoring**: Track which actions are most frequent/expensive
+
+#### Provider Pattern
+
+```typescript
+"use client";
+
+export type FeatureStoreApi = ReturnType<typeof createFeatureStore>;
+
+export const FeatureStoreContext = createContext<FeatureStoreApi | undefined>(
+  undefined
+);
+
+export const FeatureStoreProvider = ({ children }: { children: ReactNode }) => {
+  const storeRef = useRef<FeatureStoreApi>();
+  storeRef.current ??= createFeatureStore(defaultInitState);
+
+  return (
+    <FeatureStoreContext.Provider value={storeRef.current}>
+      {children}
+    </FeatureStoreContext.Provider>
+  );
+};
+
+export const useFeatureStore = <T>(selector: (store: FeatureStore) => T): T => {
+  const context = useContext(FeatureStoreContext);
+
+  if (!context) {
+    throw new Error(`useFeatureStore must be used within FeatureStoreProvider`);
+  }
+
+  return useStore(context, selector);
+};
+```
+
+#### Usage Patterns
+
+##### State Selection with useShallow
+
+```typescript
+// For multiple values - use useShallow to prevent unnecessary re-renders
+const { setColumns, updateCard, clearData } = useBoardsStore(
+  useShallow((state) => ({
+    setColumns: state.setColumns,
+    updateCard: state.updateCard,
+    clearData: state.clearData,
+  }))
+);
+
+// For single values - direct selection
+const activeCard = useBoardsStore((state) => state.activeCard);
+```
+
+##### Board-Scoped State Management
+
+- Use board ID as key for scoped state: `Record<string, SomeType[]>`
+- Always provide fallback values: `state.data[boardId] ?? defaultValue`
+- Clear board data on navigation: `clearBoardData(boardId)`
+
+##### Deep Copy for Nested Updates
+
+```typescript
+// When updating nested objects, create deep copies to avoid mutations
+updateNestedData: (id: string, updates: SomeType) => {
+  set((state) => {
+    const data = state.dataById[id];
+    if (!data) return state;
+
+    // Deep copy to avoid mutations
+    const newData = JSON.parse(JSON.stringify(data)) as SomeType[];
+    // Apply mutations to newData
+
+    return {
+      dataById: {
+        ...state.dataById,
+        [id]: newData,
+      },
+    };
+  });
+},
+```
+
+#### Integration with React Query
+
+##### Data Synchronization
+
+```typescript
+// Sync Zustand state with React Query data
+useEffect(() => {
+  if (queryData) {
+    setStoreData(entityId, queryData);
+  }
+}, [queryData, setStoreData, entityId]);
+```
+
+##### Optimistic Updates
+
+```typescript
+// Update Zustand state immediately for UI responsiveness
+const handleAction = () => {
+  // Optimistic update in Zustand
+  updateLocalState(newData);
+
+  // Background sync with server
+  mutation.mutate(data, {
+    onError: () => {
+      // Revert optimistic update on error
+      void refetchQuery();
+    },
+  });
+};
+```
+
+#### Provider Integration
+
+##### Root Provider Setup
+
+```typescript
+// client-providers.tsx
+export default function Providers({ children, session }) {
+  return (
+    <StoreProvider>
+      {" "}
+      {/* Zustand stores */}
+      <SessionProvider session={session}>
+        <QueryClientProvider client={queryClient}>
+          <WebSocketProvider>{children}</WebSocketProvider>
+        </QueryClientProvider>
+      </SessionProvider>
+    </StoreProvider>
+  );
+}
+```
+
+##### Hierarchical Store Providers
+
+```typescript
+// store-provider.tsx - Central store management
+export default function StoreProvider({ children }: { children: ReactNode }) {
+  return (
+    <BoardsStoreProvider>
+      <OtherStoreProvider>{children}</OtherStoreProvider>
+    </BoardsStoreProvider>
+  );
+}
+```
+
+#### Best Practices
+
+##### State Design
+
+- **Scoped by entity ID**: Use `Record<string, Type[]>` for entity-scoped state
+- **Separate concerns**: Split UI state from data state when appropriate
+- **Immutable updates**: Always return new objects/arrays in actions
+- **Type safety**: Define strict TypeScript interfaces for state and actions
+
+##### Performance
+
+- **Selective subscriptions**: Use specific selectors to minimize re-renders
+- **useShallow for objects**: Prevent re-renders when selecting multiple values
+- **Memoized selectors**: For complex derived state calculations
+
+##### Error Handling
+
+- **Boundary checks**: Always validate entity existence before updates
+- **Graceful degradation**: Provide fallback values for missing data
+- **Error context**: Throw descriptive errors for provider misuse
+
+##### Debugging and Development
+
+- **Redux DevTools**: Always configure devtools middleware for all stores
+- **Action naming**: Provide descriptive action names for all state mutations
+- **Development-only**: Enable devtools only in development environment
+- **Store naming**: Use unique, descriptive names for each store
+- **Time travel**: Leverage Redux DevTools for debugging state changes and race conditions
+
+#### Real-time Integration
+
+```typescript
+// WebSocket updates should trigger React Query refetch, not direct Zustand updates
+useEffect(() => {
+  socket?.on("data_updated", (payload) => {
+    const data = JSON.parse(payload);
+    if (session?.user?.id !== data.userId) {
+      void refetchQuery(); // React Query handles the Zustand sync
+    }
+  });
+}, [socket, session?.user?.id, refetchQuery]);
+```
+
+#### Testing Considerations
+
+- **Store isolation**: Each test should use fresh store instances
+- **Provider wrapping**: Wrap components with store providers in tests
+- **State assertions**: Test both state updates and action behaviors
+
+## Backend (Express.js) Rules
+
+### API Structure
+
+#### Route Organization
+
+- Each feature has its own route file in `server/routes/`
+- Route files export Express Router instances
+- Use RESTful conventions where possible
+- Apply HMAC auth middleware globally
+
+#### Route Patterns
+
+```javascript
+router.get("/", async (req, res) => {           // GET /api/boards
+router.get("/:id", async (req, res) => {       // GET /api/boards/:id
+router.post("/", async (req, res) => {         // POST /api/boards
+router.put("/:id", async (req, res) => {       // PUT /api/boards/:id
+router.delete("/:id", async (req, res) => {    // DELETE /api/boards/:id
+```
+
+#### Error Handling
+
+- Use try-catch blocks in all route handlers
+- Log errors with structured logging: `req.logger.error({ error }, "Description")`
+- Return consistent error responses with status codes
+- Include error messages for debugging
+
+#### Real-time Features
+
+- Use Socket.IO for real-time updates
+- PostgreSQL NOTIFY/LISTEN with `pg-realtime`
+- Emit events to specific rooms (board-specific, user-specific)
+- Channel naming: `posts`, `columns`, `cards`, `comments`, `boards`, `notifications`
+
+### Database Patterns
+
+#### Prisma Usage
+
+- Import `db` from shared db package: `import { db } from "../db"`
+- Use Prisma include patterns for related data
+- Implement soft deletes with `archived` boolean + `archivedAt` timestamp
+- Use `cuid()` for primary keys
+
+#### Relationships
+
+- One-to-many: `boards -> columns -> cards`
+- Many-to-many: `boards <-> users` via `BoardMembers`
+- User relations: `createdBy` fields reference `User` model
+- Cascade deletes where appropriate
+
+## Database (Prisma) Rules
+
+### Schema Patterns
+
+#### Models
+
+- Use PascalCase for model names
+- Use camelCase for field names
+- Include `createdAt` and `updatedAt` timestamps on all models
+- Use `archived` + `archivedAt` for soft deletes instead of hard deletes
+
+#### Field Types
+
+- Primary keys: `String @id @default(cuid())`
+- Enums: Define in schema for fixed value sets (`Role`, `NotificationType`)
+- Relations: Always specify both sides with proper constraints
+- Indexes: Add `@@index` for frequently queried fields
+
+#### Constraints
+
+- Use `onDelete: Cascade` for parent-child relationships
+- Use `onDelete: SetNull` for optional foreign keys
+- Use `@@unique` for composite unique constraints
+
+## Security & Authentication
+
+### HMAC Authentication
+
+- All API endpoints protected with HMAC middleware
+- User ID extracted from HMAC payload, available as `req.userId`
+- Frontend uses `useAuthenticatedAxios()` for automatic HMAC signing
+- Server components use `ServerHMACAxiosClient` for API calls
+
+### Session Management
+
+- NextAuth.js for authentication
+- Session data includes user ID and role
+- Server components access session with `getServerAuthSession()`
+- Client components use `useSession()` hook
+
+## Development Practices
+
+### Code Quality
+
+- Use TypeScript strictly - no `any` types
+- Prefer explicit return types for functions
+- Use meaningful variable and function names
+- Follow consistent formatting with Prettier
+
+### Error Handling
+
+- Always handle errors in async functions
+- Provide user-friendly error messages
+- Log errors for debugging
+- Use React Query error boundaries for UI error states
+
+### Performance
+
+- Use React Query caching effectively
+- Implement optimistic updates for better UX
+- Use Next.js server components for initial data loading
+- Minimize client-side JavaScript bundle
+
+### Testing Strategy
+
+- Focus on API endpoint testing
+- Test React Query hooks integration
+- Test HMAC authentication flows
+- Validate Prisma schema migrations
+
+## Migration & Deployment
+
+### API Migration Strategy
+
+- **DEPRECATED**: tRPC API (being phased out)
+- **PREFERRED**: Express.js REST API endpoints
+- Use Express API clients in all new code
+- Don't generate example usage documents for APIs
+
+### Environment Configuration
+
+- Use `@t3-oss/env-nextjs` for environment validation
+- Define environment variables in `src/env.js`
+- Use different configs for development/production
+
+### Build & Deploy
+
+- Frontend: Next.js build with static generation where possible
+- Backend: Express.js with PM2 or container deployment
+- Database: PostgreSQL with automated migrations
+- Monitoring: Prometheus metrics + structured logging
+
+## Component Examples
+
+### API Client Pattern
+
+```typescript
+export class FeatureAPIClient {
+  private axios: AxiosInstance;
+
+  constructor(axiosInstance: AxiosInstance) {
+    this.axios = axiosInstance;
+  }
+
+  async getItems(): Promise<Item[]> {
+    const response = await this.axios.get<Item[]>("/items");
+    return response.data;
+  }
+}
+
+export const ClientFeatureAPI = new FeatureAPIClient(
+  hmacAxios.getAxiosInstance()
+);
+```
+
+### React Query Hook Pattern
+
+```typescript
+export function useItems() {
+  const { isAuthenticated } = useAuthenticatedAxios();
+
+  return useQuery({
+    queryKey: itemsKeys.all,
+    queryFn: () => ClientFeatureAPI.getItems(),
+    enabled: isAuthenticated,
+  });
+}
+```
+
+These rules ensure consistency, maintainability, and alignment with the project's architectural decisions. Always prioritize these patterns when adding new features or refactoring existing code.

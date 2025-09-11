@@ -11,6 +11,7 @@ export interface User {
   id: string;
   name: string | null;
   email: string | null;
+  emailVerified: Date | null;
   image: string | null;
   role: "USER" | "ADMIN";
 }
@@ -40,6 +41,25 @@ export interface Card {
   updatedAt: Date;
   attachments?: Attachment[];
   createdBy?: User;
+  comments?: Comment[];
+  column?: {
+    id: string;
+    name: string | null;
+    position: number;
+    boardId: string;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+}
+
+export interface Comment {
+  id: string;
+  value: string; // Match the Prisma schema field name
+  cardId: string;
+  createdById: string;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: User;
 }
 
 export interface Post {
@@ -73,6 +93,10 @@ export interface DeleteCardData {
   userId: string;
 }
 
+export interface GetCardsParams {
+  includeArchived?: boolean;
+}
+
 /**
  * Cards API Client
  * Uses dependency injection for axios instance (client or server)
@@ -89,6 +113,23 @@ export class CardsAPIClient {
    */
   async getPosts(): Promise<Post[]> {
     const response = await this.axios.get<Post[]>("/cards");
+    return response.data;
+  }
+
+  /**
+   * Get cards for a specific column
+   */
+  async getCardsByColumn(
+    columnId: string,
+    params?: GetCardsParams,
+  ): Promise<Card[]> {
+    const queryParams = new URLSearchParams();
+    if (params?.includeArchived) {
+      queryParams.append("includeArchived", "true");
+    }
+
+    const url = `/cards/column/${columnId}${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
+    const response = await this.axios.get<Card[]>(url);
     return response.data;
   }
 

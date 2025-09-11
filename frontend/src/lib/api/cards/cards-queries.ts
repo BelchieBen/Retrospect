@@ -10,6 +10,7 @@ import {
   type UpdateCardData,
   type ArchiveCardData,
   type DeleteCardData,
+  type GetCardsParams,
 } from "./cards-client";
 import { useAuthenticatedAxios } from "~/hooks/use-hmac-axios";
 
@@ -18,6 +19,8 @@ export const cardsKeys = {
   all: ["cards"] as const,
   lists: () => [...cardsKeys.all, "list"] as const,
   posts: () => [...cardsKeys.all, "posts"] as const,
+  byColumn: (columnId: string, params?: GetCardsParams) =>
+    [...cardsKeys.all, "byColumn", columnId, { params }] as const,
 };
 
 /**
@@ -35,6 +38,20 @@ export function usePosts() {
 }
 
 /**
+ * Hook to get cards for a specific column
+ */
+export function useCardsByColumn(columnId: string, params?: GetCardsParams) {
+  const { isAuthenticated } = useAuthenticatedAxios();
+
+  return useQuery({
+    queryKey: cardsKeys.byColumn(columnId, params),
+    queryFn: () => ClientCardsAPI.getCardsByColumn(columnId, params),
+    enabled: isAuthenticated && !!columnId,
+    staleTime: 30 * 1000, // 30 seconds
+  });
+}
+
+/**
  * Hook to create a card
  */
 export function useCreateCard() {
@@ -43,12 +60,17 @@ export function useCreateCard() {
   return useMutation({
     mutationFn: (data: CreateCardData) => ClientCardsAPI.createCard(data),
     onSuccess: (data, variables) => {
-      // Invalidate posts and any column data that might include cards
+      // Invalidate all card queries
       void queryClient.invalidateQueries({
         queryKey: cardsKeys.all,
       });
 
-      // Also invalidate columns for this board since cards are nested in columns
+      // Specifically invalidate the column that this card was added to
+      void queryClient.invalidateQueries({
+        queryKey: cardsKeys.byColumn(variables.columnId),
+      });
+
+      // Also invalidate columns for this board since cards are nested in columns (legacy)
       void queryClient.invalidateQueries({
         queryKey: ["columns"],
       });

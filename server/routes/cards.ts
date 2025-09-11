@@ -11,6 +11,32 @@ router.get("/", async (req, res) => {
   res.json(posts);
 });
 
+// Get cards for a specific column
+router.get("/column/:columnId", async (req, res) => {
+  const { columnId } = req.params;
+  const { includeArchived } = req.query as { includeArchived?: string };
+
+  try {
+    const cards = await db.card.findMany({
+      where: {
+        columnId: columnId,
+        ...(includeArchived === "true" ? {} : { archived: false }),
+      },
+      include: {
+        comments: { include: { createdBy: true } },
+        createdBy: true,
+        column: true,
+      },
+      orderBy: { position: "asc" },
+    });
+
+    res.json(cards);
+  } catch (error) {
+    console.error("Error fetching cards for column:", error);
+    res.status(500).json({ error: "Failed to fetch cards" });
+  }
+});
+
 router.post("/", async (req, res) => {
   const { title, userId, columnId, boardId } = req.body as {
     title: string | null;

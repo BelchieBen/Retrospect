@@ -5,6 +5,7 @@
 
 import type { AxiosInstance } from "axios";
 import hmacAxios from "~/lib/hmac-axios";
+import { type Prisma } from "@prisma/client";
 
 // Types based on your Prisma schema and API responses
 export interface User {
@@ -85,15 +86,24 @@ export class ColumnsAPIClient {
   async getColumns(
     boardId: string,
     params?: GetColumnsParams,
-  ): Promise<ColumnWithCards[]> {
+  ): Promise<
+    Prisma.ColumnGetPayload<{
+      include: {
+        cards: true;
+      };
+    }>[]
+  > {
     const queryParams = params?.includeArchived
       ? { includeArchived: "true" }
       : {};
 
-    const response = await this.axios.get<ColumnWithCards[]>(
-      `/columns/${boardId}`,
-      { params: queryParams },
-    );
+    const response = await this.axios.get<
+      Prisma.ColumnGetPayload<{
+        include: {
+          cards: true;
+        };
+      }>[]
+    >(`/columns/${boardId}`, { params: queryParams });
     return response.data;
   }
 

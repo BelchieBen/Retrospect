@@ -1,5 +1,4 @@
 "use client";
-import { type Prisma } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { useWebSocket } from "~/lib/WebsocketContext";
@@ -29,18 +28,14 @@ import { useSession } from "next-auth/react";
 import { ICopy, IPlus, ITick, IUsers } from "~/icons";
 import { toast } from "sonner";
 import { type BoardWithDetails } from "~/lib/api/boards/board-client";
-
-type ColumnWithCards = Prisma.ColumnGetPayload<{
-  include: {
-    cards: {
-      include: {
-        comments: { include: { createdBy: true } };
-        createdBy: true;
-        column: true;
-      };
-    };
-  };
-}>;
+import { useShallow } from "zustand/react/shallow";
+import { useBoardsStore } from "~/lib/zustand/boards/boards-store-provider";
+import {
+  useCardsStore,
+  CardsStoreContext,
+} from "~/lib/zustand/cards/cards-store-provider";
+import { useContext } from "react";
+import { type Column } from "@prisma/client";
 
 export default function BoardColumns({
   initialBoard,
@@ -49,16 +44,35 @@ export default function BoardColumns({
 }>) {
   const { socket } = useWebSocket();
   const session = useSession();
-  const [localColumns, setLocalColumns] = useState<ColumnWithCards[]>([]);
-  const [showArchivedCards, setShowArchivedCards] = useState(false);
+  const cardsStoreContext = useContext(CardsStoreContext);
+
+  const localColumns = useBoardsStore(
+    useShallow((state) => state.columnsByBoardId[initialBoard.id] ?? []),
+  );
+  const showArchivedCards = useBoardsStore(
+    (state) => state.showArchivedCards[initialBoard.id] ?? false,
+  );
+
+  // Get active card from cards store
+  const activeCard = useCardsStore((state) => state.activeCard);
+
+  const { setColumns, setShowArchivedCards } = useBoardsStore(
+    useShallow((state) => ({
+      setColumns: state.setColumns,
+      setShowArchivedCards: state.setShowArchivedCards,
+    })),
+  );
+
+  const { moveCard, reorderCard, setActiveCard, findCard } = useCardsStore(
+    useShallow((state) => ({
+      moveCard: state.moveCard,
+      reorderCard: state.reorderCard,
+      setActiveCard: state.setActiveCard,
+      findCard: state.findCard,
+    })),
+  );
+
   const [copied, setCopied] = useState(false);
-  const [activeCard, setActiveCard] = useState<Prisma.CardGetPayload<{
-    include: {
-      comments: { include: { createdBy: true } };
-      createdBy: true;
-      column: true;
-    };
-  }> | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -71,57 +85,10 @@ export default function BoardColumns({
   const moveCardMutation = useUpdateCard();
   const createColumnMutation = useCreateColumn();
 
-  const updateLocalColumns = (
-    cardId: string,
-    newColumnId: string,
-    newPosition: number,
-  ) => {
-    setLocalColumns((currentColumns) => {
-      if (!currentColumns.length) return currentColumns;
-
-      const newColumns = JSON.parse(
-        JSON.stringify(currentColumns),
-      ) as ColumnWithCards[];
-      let cardToMove = null;
-
-      // Find and remove the card from its current position
-      for (const column of newColumns) {
-        if (column?.cards) {
-          const cardIndex = column.cards.findIndex(
-            (card) => card.id === cardId,
-          );
-          if (cardIndex !== -1) {
-            cardToMove = column.cards[cardIndex];
-            column.cards = column.cards.filter((card) => card.id !== cardId);
-            break;
-          }
-        }
-      }
-
-      // Add the card to its new position
-      if (cardToMove) {
-        const targetColumn = newColumns.find((col) => col.id === newColumnId);
-        if (targetColumn?.cards) {
-          const insertPosition = Math.min(
-            newPosition,
-            targetColumn.cards.length,
-          );
-          (cardToMove as { columnId: string; position: number }).columnId =
-            newColumnId;
-          (cardToMove as { columnId: string; position: number }).position =
-            newPosition;
-          targetColumn.cards.splice(insertPosition, 0, cardToMove);
-        }
-      }
-
-      return newColumns;
-    });
-  };
-
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
-    const card = findCardById(active.id as string);
-    setActiveCard(card);
+    const cardInfo = findCard(active.id as string);
+    setActiveCard(cardInfo?.card ?? null);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -136,41 +103,44 @@ export default function BoardColumns({
     if (cardId === overId) return; // Card dropped on itself
 
     // Find the card being dragged and its current column
-    const activeCard = findCardById(cardId);
-    if (!activeCard) return;
+    const activeCardInfo = findCard(cardId);
+    if (!activeCardInfo) return;
 
-    const activeColumn = findColumnByCardId(cardId);
-    if (!activeColumn) return;
+    const activeColumnId = activeCardInfo.columnId;
 
     // Handle dropping over a column (empty space)
-    const overColumn = findColumnById(overId);
+    const overColumn = localColumns.find((col) => col.id === overId);
     if (overColumn) {
-      return handleDropOnColumn(cardId, activeColumn, overColumn);
+      return handleDropOnColumn(cardId, activeColumnId, overColumn);
     }
 
     // Handle dropping over another card
-    const overCard = findCardById(overId);
-    if (overCard) {
-      const targetColumn = findColumnByCardId(overId);
-      if (!targetColumn) return;
-
-      return handleDropOnCard(cardId, activeColumn, targetColumn, overId);
+    const overCardInfo = findCard(overId);
+    if (overCardInfo) {
+      const targetColumnId = overCardInfo.columnId;
+      return handleDropOnCard(cardId, activeColumnId, targetColumnId, overId);
     }
   };
 
   const handleDropOnColumn = (
     cardId: string,
-    activeColumn: ColumnWithCards,
-    overColumn: ColumnWithCards,
+    activeColumnId: string,
+    overColumn: Column,
   ) => {
-    if (activeColumn.id === overColumn.id) return; // Same column, no change needed
+    if (activeColumnId === overColumn.id) return; // Same column, no change needed
 
-    const newPosition = overColumn.cards.length;
+    // Get cards in target column to determine new position
+    if (!cardsStoreContext) return;
+    const cardsState = cardsStoreContext.getState();
+    const targetCards = cardsState.cardsByColumnId[overColumn.id] ?? [];
+    const newPosition = targetCards.length;
 
-    updateLocalColumns(cardId, overColumn.id, newPosition);
+    // Optimistic update
+    moveCard(cardId, activeColumnId, overColumn.id, newPosition);
 
     if (!session.data?.user?.id) return;
 
+    // Background API update
     moveCardMutation.mutate({
       cardId,
       data: {
@@ -183,89 +153,56 @@ export default function BoardColumns({
 
   const handleDropOnCard = (
     cardId: string,
-    activeColumn: ColumnWithCards,
-    targetColumn: ColumnWithCards,
+    activeColumnId: string,
+    targetColumnId: string,
     overCardId: string,
   ) => {
-    const activeCardIndex = activeColumn.cards.findIndex(
-      (card) => card.id === cardId,
-    );
-    const targetCardIndex = targetColumn.cards.findIndex(
-      (card) => card.id === overCardId,
-    );
+    // Get the target card info to determine position
+    const overCardInfo = findCard(overCardId);
+    if (!overCardInfo) return;
 
-    if (activeColumn.id === targetColumn.id) {
+    const targetPosition = overCardInfo.card.position;
+
+    if (activeColumnId === targetColumnId) {
       // Reordering within the same column
-      if (activeCardIndex === targetCardIndex) return; // Same position
-
-      updateLocalColumns(cardId, targetColumn.id, targetCardIndex);
-
-      if (!session.data?.user?.id) return;
-
-      moveCardMutation.mutate({
-        cardId,
-        data: {
-          columnId: targetColumn.id,
-          position: targetCardIndex,
-          userId: session.data.user.id,
-        },
-      });
+      reorderCard(targetColumnId, cardId, targetPosition);
     } else {
       // Moving between different columns
-      updateLocalColumns(cardId, targetColumn.id, targetCardIndex);
-
-      if (!session.data?.user?.id) return;
-
-      moveCardMutation.mutate({
-        cardId,
-        data: {
-          columnId: targetColumn.id,
-          position: targetCardIndex,
-          userId: session.data.user.id,
-        },
-      });
+      moveCard(cardId, activeColumnId, targetColumnId, targetPosition);
     }
+
+    if (!session.data?.user?.id) return;
+
+    // Background API update
+    moveCardMutation.mutate({
+      cardId,
+      data: {
+        columnId: targetColumnId,
+        position: targetPosition,
+        userId: session.data.user.id,
+      },
+    });
   };
 
-  const findCardById = (id: string) => {
-    for (const column of localColumns ?? []) {
-      const card = column.cards.find((card) => card.id === id);
-      if (card) return card;
-    }
-    return null;
-  };
-
-  const findColumnById = (id: string): ColumnWithCards | null => {
-    return localColumns?.find((column) => column.id === id) ?? null;
-  };
-
-  const findColumnByCardId = (cardId: string): ColumnWithCards | null => {
-    for (const column of localColumns ?? []) {
-      if (column.cards.some((card) => card.id === cardId)) {
-        return column;
-      }
-    }
-    return null;
-  };
-
+  // Fetch columns only (without cards)
   const { data: columns, refetch: refetchColumns } = useColumns(
     initialBoard.id,
     {
-      includeArchived: showArchivedCards,
+      includeArchived: false, // Don't include cards in columns query
     },
   );
 
-  // Sync local state with fetched data
+  // Sync Zustand state with fetched data
   useEffect(() => {
     if (columns) {
-      setLocalColumns(columns as unknown as ColumnWithCards[]);
+      setColumns(initialBoard.id, columns);
     }
-  }, [columns]);
+  }, [columns, setColumns, initialBoard.id]);
 
-  // Handle websocket updates - React Query handles cache invalidation automatically
+  // Handle websocket updates - only for columns (cards are handled in individual column components)
   useEffect(() => {
     if (socket) {
-      const handleUpdate = async (payload: string) => {
+      const handleColumnUpdate = async (payload: string) => {
         const payloadData = JSON.parse(payload) as {
           id: string;
           userId: string;
@@ -276,15 +213,13 @@ export default function BoardColumns({
         }
       };
 
-      socket.on("column_updated", handleUpdate);
-      socket.on("card_updated", handleUpdate);
+      socket.on("column_updated", handleColumnUpdate);
 
       return () => {
-        socket.off("column_updated", handleUpdate);
-        socket.off("card_updated", handleUpdate);
+        socket.off("column_updated", handleColumnUpdate);
       };
     }
-  }, [socket, session.data?.user.id]);
+  }, [socket, session.data?.user.id, refetchColumns]);
 
   const addColumn = () => {
     if (!initialBoard) return;
@@ -377,7 +312,9 @@ export default function BoardColumns({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setShowArchivedCards(!showArchivedCards)}
+              onClick={() =>
+                setShowArchivedCards(initialBoard.id, !showArchivedCards)
+              }
               className={
                 showArchivedCards
                   ? "border-blue-200 bg-blue-50 text-blue-700"
@@ -400,8 +337,12 @@ export default function BoardColumns({
         </div>
 
         <div className="flex flex-1 gap-4 overflow-auto pb-4">
-          {localColumns?.map((column) => (
-            <BoardColumn key={column.id} column={column} />
+          {localColumns?.map((column: Column) => (
+            <BoardColumn
+              key={column.id}
+              column={column}
+              showArchivedCards={showArchivedCards}
+            />
           ))}
           <Button
             variant={"outline"}

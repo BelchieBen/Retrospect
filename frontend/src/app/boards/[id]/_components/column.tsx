@@ -24,103 +24,130 @@ import {
   useUpdateColumn,
   useDeleteColumn,
 } from "~/lib/api/columns/columns-queries";
-import { useCreateCard } from "~/lib/api/cards/cards-queries";
+import { useCreateCard, useCardsByColumn } from "~/lib/api/cards/cards-queries";
 import { useSession } from "next-auth/react";
-import { Card } from "./card";
+import DraggableCard from "./draggable-card";
 import { useDroppable, useDndContext } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
-  useSortable,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { useCardsStore } from "~/lib/zustand/cards/cards-store-provider";
+import { useShallow } from "zustand/react/shallow";
+import { type CardWithDetails } from "~/lib/zustand/cards/cards-store";
+import { useWebSocket } from "~/lib/WebsocketContext";
 
-function DraggableCard({
-  card,
-}: Readonly<{
-  card: Prisma.CardGetPayload<{
-    include: {
-      comments: { include: { createdBy: true } };
-      createdBy: true;
-      column: true;
-    };
-  }>;
-}>) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: card.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  // Simple and fast event handler that prevents drag from form elements
-  const handlePointerDown = (e: React.PointerEvent) => {
-    const target = e.target as HTMLElement;
-    // Quick check: if it's a form element, stop the event from reaching the drag listeners
-    if (
-      target.tagName === "TEXTAREA" ||
-      target.tagName === "INPUT" ||
-      target.contentEditable === "true"
-    ) {
-      e.stopPropagation();
-      return;
-    }
-    // Let the original drag listener handle it
-    listeners?.onPointerDown?.(e);
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      onPointerDown={handlePointerDown}
-    >
-      <Card card={card} />
-    </div>
-  );
-}
+// Update the column type to just basic column without cards
+type ColumnProps = {
+  column: Prisma.ColumnGetPayload<{ include: Record<string, never> }>;
+  showArchivedCards?: boolean;
+};
 
 export default function BoardColumn({
   column,
-}: Readonly<{
-  column: Prisma.ColumnGetPayload<{
-    include: {
-      cards: {
-        include: {
-          comments: { include: { createdBy: true } };
-          createdBy: true;
-          column: true;
-        };
-      };
-    };
-  }>;
-}>) {
+  showArchivedCards = false,
+}: Readonly<ColumnProps>) {
   const [columnName, setColumnName] = useState(column.name ?? "");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { data: session } = useSession();
   const { active, over } = useDndContext();
+  const { socket } = useWebSocket();
+
+  // Get cards from the cards store - use useMemo for stable empty array
+  const localCards = useCardsStore(
+    useShallow((state) => state.cardsByColumnId[column.id] ?? []),
+  );
+
+  const {
+    setCardsForColumn,
+    setColumnLoading,
+    setShowArchivedCards: setStoreShowArchivedCards,
+  } = useCardsStore(
+    useShallow((state) => ({
+      setCardsForColumn: state.setCardsForColumn,
+      setColumnLoading: state.setColumnLoading,
+      setShowArchivedCards: state.setShowArchivedCards,
+    })),
+  );
+
+  // Fetch cards for this column
+  const cardsQuery = useCardsByColumn(column.id, {
+    includeArchived: showArchivedCards,
+  });
+
+  // Sync fetched cards with Zustand store
+  useEffect(() => {
+    if (cardsQuery.data && Array.isArray(cardsQuery.data)) {
+      // Transform the API cards to match CardWithDetails type
+      const transformedCards: CardWithDetails[] = cardsQuery.data.map(
+        (card) => ({
+          ...card,
+          comments: card.comments ?? [],
+          column: card.column ?? null,
+          createdBy: card.createdBy ?? {
+            id: card.createdById,
+            name: null,
+            email: null,
+            emailVerified: null,
+            image: null,
+            role: "USER" as const,
+          },
+        }),
+      );
+      setCardsForColumn(column.id, transformedCards);
+    }
+  }, [cardsQuery.data, setCardsForColumn, column.id]);
+
+  // Set loading state
+  useEffect(() => {
+    setColumnLoading(column.id, cardsQuery.isLoading ?? false);
+  }, [setColumnLoading, column.id, cardsQuery.isLoading]);
+
+  // Sync archived cards setting with store
+  useEffect(() => {
+    setStoreShowArchivedCards(column.id, showArchivedCards);
+  }, [setStoreShowArchivedCards, column.id, showArchivedCards]);
+
+  // Handle websocket updates for this column's cards
+  useEffect(() => {
+    if (socket) {
+      const handleCardUpdate = async (payload: string) => {
+        const payloadData = JSON.parse(payload) as {
+          id?: string;
+          columnId?: string;
+          userId: string;
+        };
+
+        // Only refetch if this update affects this column and wasn't from current user
+        if (
+          session?.user?.id !== payloadData.userId &&
+          (payloadData.columnId === column.id ||
+            // Also refetch if a card was moved to this column
+            localCards.some((card) => card.id === payloadData.id))
+        ) {
+          void cardsQuery.refetch();
+        }
+      };
+
+      socket.on("card_updated", handleCardUpdate);
+
+      return () => {
+        socket.off("card_updated", handleCardUpdate);
+      };
+    }
+  }, [socket, session?.user?.id, column.id, localCards, cardsQuery]);
 
   const { setNodeRef } = useDroppable({
     id: column.id,
   });
 
-  const cardIds = column.cards.map((card) => card.id);
+  const cardIds = localCards.map((card) => card.id);
 
   // Check if we're dragging a card from another column over this column
   const isDraggingOverFromDifferentColumn = useMemo(() => {
     if (!active) return false;
 
-    const isCardFromThisColumn = column.cards.some(
+    const isCardFromThisColumn = localCards.some(
       (card) => card.id === active.id,
     );
     if (isCardFromThisColumn) return false; // Card is from this column
@@ -128,9 +155,9 @@ export default function BoardColumn({
     // Either hovering over the column directly or over a card in this column
     return (
       over?.id === column.id ||
-      (over?.id && column.cards.some((card) => card.id === over.id))
+      (over?.id && localCards.some((card) => card.id === over.id))
     );
-  }, [active, over, column.id, column.cards]);
+  }, [active, over, column.id, localCards]);
 
   const deleteColumnMutation = useDeleteColumn();
   const addCardMutation = useCreateCard();
@@ -257,7 +284,7 @@ export default function BoardColumn({
         className={`no-scrollbar flex min-h-[100px] flex-1 flex-col gap-4 overflow-y-auto p-2 transition-all duration-200 ${isDraggingOverFromDifferentColumn ? "rounded-lg border-2 border-dashed border-blue-300 bg-blue-50" : ""}`}
       >
         <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
-          {column.cards.map((card) => (
+          {localCards.map((card) => (
             <div key={card.id}>
               <DraggableCard card={card} />
             </div>
