@@ -58,6 +58,10 @@ export default function BoardColumn({
     useShallow((state) => state.cardsByColumnId[column.id] ?? []),
   );
 
+  useEffect(() => {
+    console.log(localCards);
+  }, [localCards]);
+
   const {
     setCardsForColumn,
     setColumnLoading,

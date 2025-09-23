@@ -10,6 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { useSession } from "next-auth/react";
 import { IBox, ICross, IPencil, ITick } from "~/icons";
 import { useUpdateCard } from "~/lib/api/cards/cards-queries";
+import { useCardsStore } from "~/lib/zustand/cards/cards-store-provider";
+import { useShallow } from "zustand/react/shallow";
 
 export function Card({
   card,
@@ -28,6 +30,13 @@ export function Card({
   const { data: session } = useSession();
   const updateCardMutation = useUpdateCard();
 
+  // Get the updateCard action from Zustand store
+  const { updateCard } = useCardsStore(
+    useShallow((state) => ({
+      updateCard: state.updateCard,
+    })),
+  );
+
   useEffect(() => {
     setCardName(card.name ?? "");
   }, [card]);
@@ -43,13 +52,28 @@ export function Card({
     setCardName(name);
     if (!session?.user?.id) return;
 
-    updateCardMutation.mutate({
-      cardId: card.id,
-      data: {
-        name,
-        userId: session.user.id,
+    // Store the previous name for potential rollback
+    const previousName = card.name;
+
+    // Optimistically update the Zustand store
+    updateCard(card.id, { name });
+
+    updateCardMutation.mutate(
+      {
+        cardId: card.id,
+        data: {
+          name,
+          userId: session.user.id,
+        },
       },
-    });
+      {
+        onError: () => {
+          // Rollback the optimistic update on error
+          updateCard(card.id, { name: previousName });
+          setCardName(previousName ?? "");
+        },
+      },
+    );
   };
 
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -196,24 +220,32 @@ export function Card({
 
         <CardDialog card={card} />
       </Dialog>
-      <Button
-        variant="ghost"
-        className="mx-1"
-        onClick={() => {
-          setIsEditingTitle(!isEditingTitle);
-          if (!isEditingTitle) {
-            setTimeout(() => {
-              if (cardNameRef.current) {
-                const length = cardNameRef.current.value.length;
-                cardNameRef.current.focus();
-                cardNameRef.current.setSelectionRange(length, length);
-              }
-            }, 0);
-          }
-        }}
-      >
-        {!isEditingTitle ? <IPencil /> : <ITick />}
-      </Button>
+      <div className="mx-2 flex items-center">
+        <Button
+          variant="ghost"
+          onClick={() => {
+            setIsEditingTitle(!isEditingTitle);
+            if (!isEditingTitle) {
+              setTimeout(() => {
+                if (cardNameRef.current) {
+                  const length = cardNameRef.current.value.length;
+                  cardNameRef.current.focus();
+                  cardNameRef.current.setSelectionRange(length, length);
+                }
+              }, 0);
+            }
+          }}
+        >
+          {!isEditingTitle ? <IPencil /> : <ITick />}
+        </Button>
+        <Avatar className="h-6 w-6">
+          <AvatarImage
+            src={card.createdBy.image ?? ""}
+            alt={card.createdBy.name ?? ""}
+          />
+          <AvatarFallback>BB</AvatarFallback>
+        </Avatar>
+      </div>
     </div>
   );
 }

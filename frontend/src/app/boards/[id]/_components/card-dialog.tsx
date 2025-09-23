@@ -19,8 +19,8 @@ import { TextareaAutosize } from "~/components/ui/textarea-autosize";
 import { type Prisma } from "@prisma/client";
 import React, {
   type ChangeEvent,
+  useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -50,6 +50,8 @@ import Image from "next/image";
 import CardComments from "./comments";
 import { useSession } from "next-auth/react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCardsStore } from "~/lib/zustand/cards/cards-store-provider";
+import { useShallow } from "zustand/react/shallow";
 
 const FormSchema = z.object({
   description: z.string().optional(),
@@ -69,13 +71,20 @@ export default function CardDialog({
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
-  const cardNameRef = useRef<HTMLTextAreaElement>(null);
+  const cardNameTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const { data: session } = useSession();
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    setCardName(card.name ?? "");
-  }, [card.name]);
+  // Get the updateCard action and findCard function from Zustand store
+  const { updateCard, findCard } = useCardsStore(
+    useShallow((state) => ({
+      updateCard: state.updateCard,
+      findCard: state.findCard,
+    })),
+  );
+
+  // Get the current card from Zustand store (this will be updated when description changes)
+  const currentCard = findCard(card.id)?.card ?? card;
 
   const deleteCardMutation = useDeleteCard();
   const archiveCardMutation = useArchiveCard();
@@ -84,13 +93,19 @@ export default function CardDialog({
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      description: card.description ?? "",
+      description: currentCard.description ?? "",
     },
   });
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     if (!data.description) setEditDescription(false);
     if (!session?.user?.id) return;
+
+    // Store the previous description for potential rollback
+    const previousDescription = currentCard.description;
+
+    // Optimistically update the Zustand store
+    updateCard(card.id, { description: data.description });
 
     updateCardMutation.mutate(
       {
@@ -106,6 +121,8 @@ export default function CardDialog({
           setEditDescription(false);
         },
         onError: () => {
+          // Rollback the optimistic update on error
+          updateCard(card.id, { description: previousDescription });
           toast.error("Failed to update card");
         },
       },
@@ -149,6 +166,12 @@ export default function CardDialog({
     setCardName(name);
     if (!session?.user?.id) return;
 
+    // Store the previous name for potential rollback
+    const previousName = card.name;
+
+    // Optimistically update the Zustand store
+    updateCard(card.id, { name });
+
     updateCardMutation.mutate(
       {
         cardId: card.id,
@@ -166,6 +189,11 @@ export default function CardDialog({
               }),
             });
           }
+        },
+        onError: () => {
+          // Rollback the optimistic update on error
+          updateCard(card.id, { name: previousName });
+          setCardName(previousName ?? "");
         },
       },
     );
@@ -204,16 +232,62 @@ export default function CardDialog({
     setShowDeleteDialog(true);
   };
 
-  const resizeTextArea = (textArea: HTMLTextAreaElement) => {
+  const resizeTextArea = useCallback((textArea: HTMLTextAreaElement) => {
+    // Reset height to auto to get accurate scrollHeight
     textArea.style.height = "auto";
-    textArea.style.height = `${textArea.scrollHeight}px`;
-  };
 
-  useLayoutEffect(() => {
-    if (cardNameRef.current) {
-      resizeTextArea(cardNameRef.current);
+    // Set the height to match the scroll height, with a minimum of one row
+    const newHeight = Math.max(textArea.scrollHeight, 24); // 24px minimum for one row
+    textArea.style.height = `${newHeight}px`;
+  }, []);
+
+  const setTextareaRef = useCallback(
+    (el: HTMLTextAreaElement | null) => {
+      cardNameTextareaRef.current = el;
+      if (el) {
+        // Resize immediately when the element is mounted and after value is set
+        requestAnimationFrame(() => {
+          resizeTextArea(el);
+          // Also try after a delay for dialog animations
+          setTimeout(() => resizeTextArea(el), 100);
+        });
+      }
+    },
+    [resizeTextArea],
+  );
+
+  // Auto-resize textarea when dialog opens or card name changes
+  useEffect(() => {
+    if (cardNameTextareaRef.current) {
+      resizeTextArea(cardNameTextareaRef.current);
     }
-  }, [cardNameRef]);
+  }, [cardName, resizeTextArea]);
+
+  // Ensure textarea is properly sized on initial render and when dialog opens
+  useEffect(() => {
+    const resizeOnMount = () => {
+      if (cardNameTextareaRef.current) {
+        resizeTextArea(cardNameTextareaRef.current);
+      }
+    };
+
+    // Try multiple times to ensure the dialog is fully rendered and animations complete
+    const timeouts = [0, 50, 100, 200, 300, 500];
+    const timeoutIds = timeouts.map((delay) =>
+      setTimeout(resizeOnMount, delay),
+    );
+
+    return () => {
+      timeoutIds.forEach(clearTimeout);
+    };
+  }, [resizeTextArea]);
+
+  // Reset form when currentCard description changes (from Zustand store updates)
+  useEffect(() => {
+    form.reset({
+      description: currentCard.description ?? "",
+    });
+  }, [currentCard.description, form]);
 
   return (
     <DialogContent className="max-h-[90vh] gap-0 overflow-y-auto overflow-x-clip p-0 sm:max-w-[625px]">
@@ -230,12 +304,11 @@ export default function CardDialog({
               className={`flex w-full ${card.gifUrl ? "justify-between" : "justify-normal gap-2"} items-center`}
             >
               <textarea
-                ref={cardNameRef}
+                ref={setTextareaRef}
                 spellCheck
-                rows={1}
                 value={cardName}
+                rows={1}
                 className="w-full resize-none overflow-hidden border-b-2 border-teal80 bg-transparent p-1 focus-visible:outline-none"
-                style={{ pointerEvents: "auto" }}
                 onChange={handleChange}
               />
             </div>
@@ -372,7 +445,7 @@ export default function CardDialog({
                     className="h-full w-full text-sm"
                     style={{ whiteSpace: "pre-wrap" }}
                   >
-                    {card.description ?? "Add a detailed description"}
+                    {currentCard.description ?? "Add a detailed description"}
                   </div>
                 </button>
               )}
