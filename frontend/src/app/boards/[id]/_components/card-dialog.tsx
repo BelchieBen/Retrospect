@@ -47,6 +47,8 @@ import { toast } from "sonner";
 import { Grid } from "@giphy/react-components";
 import giphy from "~/lib/giphy";
 import Image from "next/image";
+import { Switch } from "~/components/ui/switch";
+import { Label } from "~/components/ui/label";
 import CardComments from "./comments";
 import { useSession } from "next-auth/react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -68,6 +70,7 @@ export default function CardDialog({
   const [cardName, setCardName] = useState(card.name ?? "");
   const [giphySearchTerm, setGiphySearchTerm] = useState("");
   const [gifUrl, setGifUrl] = useState(card.gifUrl ?? "");
+  const [showGifs, setShowGifs] = useState(false);
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
@@ -453,47 +456,66 @@ export default function CardDialog({
           </div>
           {/* GIF's */}
           <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <Videotape size={20} />
-              <p>GIF</p>
-            </div>
-            <Input
-              placeholder="Search for GIFs"
-              value={giphySearchTerm}
-              style={{ pointerEvents: "auto" }}
-              onChange={(e) => {
-                setGiphySearchTerm(e.target.value);
-                void fetchGifsGrid(0);
-              }}
-            />
-            <div>
-              {gifUrl && (
-                <Button
-                  variant={"outline"}
-                  onClick={() => {
-                    setGifUrl("");
-                    void updateCardGif("");
-                  }}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Videotape size={20} />
+                <p>GIF</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Label
+                  htmlFor="gif-toggle"
+                  className="text-sm text-muted-foreground"
                 >
-                  Remove GIF
-                </Button>
-              )}
+                  {showGifs ? "Enabled" : "Disabled"}
+                </Label>
+                <Switch
+                  id="gif-toggle"
+                  checked={showGifs}
+                  onCheckedChange={setShowGifs}
+                />
+              </div>
             </div>
-            <div className="h-60 w-full overflow-x-clip overflow-y-scroll">
-              <Grid
-                columns={3}
-                fetchGifs={fetchGifsGrid}
-                gutter={6}
-                key={giphySearchTerm}
-                noResultsMessage={"No Results"}
-                width={550}
-                onGifClick={(gif, e) => {
-                  e.preventDefault();
-                  setGifUrl(gif.images.fixed_height.url);
-                  void updateCardGif(gif.images.fixed_height.url);
-                }}
-              />
-            </div>
+            {showGifs && (
+              <>
+                <Input
+                  placeholder="Search for GIFs"
+                  value={giphySearchTerm}
+                  style={{ pointerEvents: "auto" }}
+                  onChange={(e) => {
+                    setGiphySearchTerm(e.target.value);
+                    void fetchGifsGrid(0);
+                  }}
+                />
+                <div>
+                  {gifUrl && (
+                    <Button
+                      variant={"outline"}
+                      onClick={() => {
+                        setGifUrl("");
+                        void updateCardGif("");
+                      }}
+                    >
+                      Remove GIF
+                    </Button>
+                  )}
+                </div>
+                <div className="h-60 w-full overflow-x-clip overflow-y-scroll">
+                  <Grid
+                    columns={3}
+                    fetchGifs={fetchGifsGrid}
+                    gutter={6}
+                    key={giphySearchTerm}
+                    noResultsMessage={"No Results"}
+                    width={550}
+                    onGifClick={(gif, e) => {
+                      e.preventDefault();
+                      setGifUrl(gif.images.fixed_height.url);
+                      void updateCardGif(gif.images.fixed_height.url);
+                    }}
+                  />
+                </div>
+              </>
+            )}
           </div>
           <CardComments card={card} />
         </div>
